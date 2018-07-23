@@ -11,12 +11,14 @@ library(shiny)
 library(stringr)
 library(shinyjs)
 library(processx)
+library(markdown)
 library(rclipboard)
 library(reticulate)
 library(magrittr)
 
-# use_virtualenv("r-reticulate")
-use_python("/usr/bin/python")
+virtualenv_create("r-reticulate")
+use_virtualenv("r-reticulate")
+virtualenv_install("r-reticulate", "pygments")
 
 shinyServer(function(input, output, session) {
   socket <- NULL
@@ -35,6 +37,8 @@ shinyServer(function(input, output, session) {
       close(socket)
     }
   })
+  
+  updateCheckboxInput(session, "readsAreSequences", value = FALSE)
   
   # if (!is_bowtie2_running()) {
   #   removeUI("submit")
@@ -282,6 +286,7 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(c(input$mate1, input$mate1_sequence), {
+    print(input$readsAreSequences)
     if (input$readsAreSequences) {
       update_command_line(
         session,
@@ -464,10 +469,11 @@ shinyServer(function(input, output, session) {
           "sh",
           c(
             "-c",
-            "/Users/rcharles/Development/Computational_Biology/bowtie2/bowtie2-align-s --server"
-          )
-        )
+            paste0(getwd(), "/bowtie2/bowtie2-align-s --server")
+          ),
+        stdout = "|", stderr = "|")
       Sys.sleep(1)
+      print(bowtie2_process$read_error_lines())
       create_bowtie2_socket()
     }
   }
@@ -490,8 +496,7 @@ shinyServer(function(input, output, session) {
     pygments.lexers <- import("pygments.lexers")
     pygments.formatters <- import("pygments.formatters")
     
-    path_to_sam_lexer <-
-      "/Users/rcharles/Documents/bowtie2-ui/sam_lexer.py"
+    path_to_sam_lexer <- "sam_lexer.py"
     sam_lexer <-
       pygments.lexers$load_lexer_from_file(path_to_sam_lexer, "SamLexer")
     formatter <-

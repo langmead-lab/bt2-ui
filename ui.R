@@ -10,6 +10,7 @@
 library(shiny)
 library(shinyjs)
 library(parallel)
+library(markdown)
 library(rclipboard)
 library(shinydashboard)
 
