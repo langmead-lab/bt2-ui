@@ -21,6 +21,7 @@ Vagrant.configure("2") do |config|
         aws.subnet_id = "subnet-1fc8de7a"
         aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
         aws.associate_public_ip = true
+        aws.elastic_ip = "18.211.104.174"
         aws.block_device_mapping = [{
             'DeviceName' => "/dev/sdf",
             'VirtualName' => "ephemeral0",
