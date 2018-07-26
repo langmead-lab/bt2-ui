@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 # vagrant plugin install vagrant-aws
+# vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
 
@@ -17,7 +18,7 @@ Vagrant.configure("2") do |config|
         aws.ami = "ami-13401669"
         aws.tags = { 'Application' => 'bt2-ui' }
         aws.instance_type = "r4.xlarge"
-        aws.keypair_name = "default"
+        aws.keypair_name = "bt2-ui"
         aws.subnet_id = "subnet-1fc8de7a"
         aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
         aws.associate_public_ip = true
@@ -30,7 +31,7 @@ Vagrant.configure("2") do |config|
             'Ebs.VolumeType' => 'gp2'
         }]
         override.ssh.username = "ec2-user"
-        override.ssh.private_key_path = "~/.ec2_jhu/default.pem"
+        override.ssh.private_key_path = "~/.aws/bt2-ui.pem"
         aws.region_config REGION do |region|
             region.spot_instance = true
             region.spot_max_price = "0.08"
@@ -46,9 +47,7 @@ Vagrant.configure("2") do |config|
         fi
     SHELL
 
-    config.vm.provision "file", source: "~/.ssh/id_rsa", destination: "~ec2-user/.ssh/id_rsa"
-    config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~ec2-user/.ssh/id_rsa.pub"
-    config.vm.provision "file", source: "~/.docker/dockerhub_creds.txt", destination: "~ec2-user/.docker/creds.txt"
+    config.vm.provision "file", source: "~/.aws/bt2-ui.pem", destination: "~ec2-user/.ssh/id_rsa"
     config.vm.provision "file", source: "~/.aws/credentials", destination: "~ec2-user/.aws/credentials"
     config.vm.provision "file", source: "~/.aws/config", destination: "~ec2-user/.aws/config"
 
