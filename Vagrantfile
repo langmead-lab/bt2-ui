@@ -1,12 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# vagrant plugin install vagrant-aws
-# vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+# Steps:
+# 1. (install vagrant)
+# 2. vagrant plugin install vagrant-aws-mkubenka --plugin-version "0.7.2.pre.22"
+# 3. vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+#
+# Note: the standard vagrant-aws plugin does not have spot support
 
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
-
 REGION = "us-east-1"
+PUBLIC_IP = "18.211.104.174"
 
 Vagrant.configure("2") do |config|
 
@@ -22,7 +26,7 @@ Vagrant.configure("2") do |config|
         aws.subnet_id = "subnet-1fc8de7a"
         aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
         aws.associate_public_ip = true
-        aws.elastic_ip = "18.211.104.174"
+        aws.elastic_ip = PUBLIC_IP
         aws.block_device_mapping = [{
             'DeviceName' => "/dev/sdf",
             'VirtualName' => "ephemeral0",
@@ -48,8 +52,6 @@ Vagrant.configure("2") do |config|
     SHELL
 
     config.vm.provision "file", source: "~/.aws/bt2-ui.pem", destination: "~ec2-user/.ssh/id_rsa"
-    config.vm.provision "file", source: "~/.aws/credentials", destination: "~ec2-user/.aws/credentials"
-    config.vm.provision "file", source: "~/.aws/config", destination: "~ec2-user/.aws/config"
 
     config.vm.provision "shell", privileged: true, name: "install Linux packages", inline: <<-SHELL
         yum install -q -y aws-cli wget unzip tree
@@ -74,37 +76,87 @@ Vagrant.configure("2") do |config|
     config.vm.provision "shell", privileged: false, name: "download indexes", inline: <<-SHELL
         # https://github.com/ewels/AWS-iGenomes
         mkdir -p /work/indexes/bowtie2
-        cd /work/indexes/bowtie2
+        IGENOMES=https://s3-eu-west-1.amazonaws.com/ngi-igenomes/igenomes
+
         echo "Downloading GRCh38 (human)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Homo_sapiens/NCBI/GRCh38/Sequence/Bowtie2Index/' \
-            ./GRCh38/
+        cd /work/indexes/bowtie2 && mkdir -p GRCh38 && cd GRCh38
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Homo_sapiens/NCBI/GRCh38/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading GRCm38 (mouse)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Mus_musculus/NCBI/GRCm38/Sequence/Bowtie2Index/' \
-            ./GRCm38/
+        cd /work/indexes/bowtie2 && mkdir -p GRCm38 && cd GRCm38
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Mus_musculus/NCBI/GRCm38/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading Pan_troglodytes_build3_1 (chimp)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Pan_troglodytes/NCBI/build3.1/Sequence/Bowtie2Index/' \
-            ./Pan_troglodytes_build3_1/
+        cd /work/indexes/bowtie2 && mkdir -p Pan_troglodytes_build3_1 && cd Pan_troglodytes_build3_1
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Pan_troglodytes/NCBI/build3.1/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading Rattus_norvegicus_Rnor6_0 (rat)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Rattus_norvegicus/NCBI/Rnor_6.0/Sequence/Bowtie2Index/' \
-            ./Rattus_norvegicus_Rnor6_0/
+        cd /work/indexes/bowtie2 && mkdir -p Rattus_norvegicus_Rnor6_0 && cd Rattus_norvegicus_Rnor6_0
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Rattus_norvegicus/NCBI/Rnor_6.0/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading Zea_mays_AGPv3 (corn)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Zea_mays/Ensembl/AGPv3/Sequence/Bowtie2Index/' \
-            ./Zea_mays_AGPv3/
+        cd /work/indexes/bowtie2 && mkdir -p Zea_mays_AGPv3 && cd Zea_mays_AGPv3
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Zea_mays/Ensembl/AGPv3/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading D_melanogaster_build5_41 (fruitfly)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Drosophila_melanogaster/NCBI/build5.41/Sequence/Bowtie2Index/' \
-            ./D_melanogaster_build5_41/
+        cd /work/indexes/bowtie2 && mkdir -p D_melanogaster_build5_41 && cd D_melanogaster_build5_41
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Drosophila_melanogaster/NCBI/build5.41/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading TAIR10 (Arabidopsis thaliana)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Arabidopsis_thaliana/NCBI/TAIR10/Sequence/Bowtie2Index/' \
-            ./TAIR10/
+        cd /work/indexes/bowtie2 && mkdir -p TAIR10 && cd TAIR10
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Arabidopsis_thaliana/NCBI/TAIR10/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading GRCz10 (zebrafish)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Danio_rerio/NCBI/GRCz10/Sequence/Bowtie2Index/' \
-            ./GRCz10/
+        cd /work/indexes/bowtie2 && mkdir -p GRCz10 && cd GRCz10
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Danio_rerio/NCBI/GRCz10/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading C_elegans_WS195 (roundworm)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Caenorhabditis_elegans/NCBI/WS195/Sequence/Bowtie2Index/' \
-            ./C_elegans_WS195/
+        cd /work/indexes/bowtie2 && mkdir -p C_elegans_WS195 && cd C_elegans_WS195
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Caenorhabditis_elegans/NCBI/WS195/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
+
         echo "Downloading S_cerevisiae_build3_1 (yeast)"
-        aws s3 sync --quiet 's3://ngi-igenomes/igenomes/Saccharomyces_cerevisiae/NCBI/build3.1/Sequence/Bowtie2Index/' \
-            ./S_cerevisiae_build3_1/
+        cd /work/indexes/bowtie2 && mkdir -p S_cerevisiae_build3_1 && cd S_cerevisiae_build3_1
+        for i in 1.bt2 2.bt2 3.bt2 4.bt2 rev.1.bt2 rev.2.bt2 ; do
+            URL=${IGENOMES}/Saccharomyces_cerevisiae/NCBI/build3.1/Sequence/Bowtie2Index/genome.$i
+            echo "  ${URL}"
+            wget -q ${URL}
+        done
 
         echo "*** Bowtie 2 indexes now present in subdirectories of /work/indexes/bowtie2 ***"
         echo "Space overall:"
