@@ -60,7 +60,7 @@ Vagrant.configure("2") do |config|
     config.vm.provision "shell", privileged: false, name: "install bowtie2", inline: <<-SHELL
         mkdir -p /work/software
         cd /work/software
-        VER=2.3.4.1
+        VER=2.3.4.3
         SYS=linux-x86_64
         wget -q https://github.com/BenLangmead/bowtie2/releases/download/v${VER}/bowtie2-${VER}-${SYS}.zip
         unzip bowtie2-${VER}-${SYS}.zip

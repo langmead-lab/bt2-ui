@@ -8,71 +8,64 @@
 #
 
 library(shiny)
+library(readr)
 library(stringr)
 library(shinyjs)
 library(processx)
 library(markdown)
 library(rclipboard)
 library(reticulate)
+library(rintrojs)
 library(magrittr)
+library(digest)
+library(shinyBS)
 
-virtualenv_create("r-reticulate")
-use_virtualenv("r-reticulate")
-virtualenv_install("r-reticulate", "pygments")
+sam_output <- ""
 
 shinyServer(function(input, output, session) {
-  socket <- NULL
-  bowtie2_process <- NULL
+  source("tooltips.R", local = TRUE)
+  
+  register_mouseover_events(session)
   
   rclipboardSetup()
   disable("bt2Options")
   onclick("toggleCommand", toggle(id = "cmd_line", anim = TRUE))
   
-  session$onSessionEnded(function() {
-    if (!is.null(bowtie2_process)) {
-      bowtie2_process$kill()
-    }
-    if (!is.null(socket)) {
-      # close.socket(socket)
-      close(socket)
-    }
-  })
+  shinyjs::runjs("$('#mate1_sequence').attr('maxlength', 500)")
+  shinyjs::runjs("$('#mate2_sequence').attr('maxlength', 500)")
+  shinyjs::runjs("$('#unpaired_sequence').attr('maxlength', 500)")
   
+  render_controls <- function() {
+    output$moreControls <- renderUI({
+      absolutePanel(
+        id = "controls",
+        bottom = 0,
+        left = 0,
+        div(
+          style = "padding: 20px;",
+          downloadButton("downloadData", "Download"),
+          actionButton("copy", "Copy", icon = icon("copy")),
+          actionButton(
+            "highlight",
+            "Toggle Highlight",
+            icon = icon("highlighter", "fas")
+          )
+        )
+      )
+    })
+  }
+  
+  remove_controls <- function(session) {
+    removeUI(selector = "div#moreControls", session = session)
+  }
+  
+  onevent("mouseenter", "sam_output", render_controls())
+  onevent("mouseleave", "sam_output", remove_controls(session))
+
   updateCheckboxInput(session, "readsAreSequences", value = FALSE)
   
-  # if (!is_bowtie2_running()) {
-  #   removeUI("submit")
-  #   output$action <- renderUI({
-  #     actionButton("startBowtie2", label = "Start Bowtie2", icon = icon("flash"))
-  #   })
-  # } else {
-  #   removeUI("startBowtie2")
-  #   output$action <- renderUI({
-  #     actionButton("submit", label = "Run alignment", icon = icon("play"))
-  #   })
-  # }
-  autoInvalidate <- reactiveTimer(1000)
-  
-  output$action <- renderUI({
-    autoInvalidate()
-    if (!is_bowtie2_running()) {
-      removeUI("submit")
-      actionButton("startBowtie2",
-                   label = "Start Bowtie2",
-                   icon = icon("flash"))
-    } else {
-      removeUI("startBowtie2")
-      actionButton("submit", label = "Run alignment", icon = icon("play"))
-    }
-  })
-  
-  observeEvent(input$startBowtie2, {
-    run_bowtie2()
-    showNotification(
-      paste("Bowtie2 is now running on port 22000"),
-      duration = 2,
-      type = "message"
-    )
+  observeEvent(input$tabs, {
+    addClass(selector = "body", class = "sidebar-collapse")
   })
   
   observeEvent(input$nCeil, {
@@ -109,14 +102,14 @@ shinyServer(function(input, output, session) {
   observeEvent(input$scoreMin, {
     scoreMin <- str_remove(input$scoreMin, "\\s")
     if (input$alignmentType == "--end-to-end") {
-      default <- "G,20,8"
+      default <- "L,-0.6,-0.6"
     } else {
-      default <- " L,-0.6,-0.6"
+      default <- "G,20,8"
     }
     if (scoreMin == "") {
       scoreMin <- default
     }
-    updateTextInput(session, inputId = scoreMin, value = scoreMin)
+    updateTextInput(session, inputId = "scoreMin", value = scoreMin)
     update_command_line(session, "--score-min", scoreMin, default = default)
   })
   
@@ -137,32 +130,44 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$alignmentType, {
-    if (input$alignmentType == "--end-to-end")
-      update_command_line(
+    if (input$alignmentType == "--end-to-end") {
+      cmd_line <- update_command_line(
         session,
         "--end-to-end",
         input$alignmentType,
         default = "--end-to-end",
         mutually_exclusive_options = c("--local")
       )
-    else
-      update_command_line(
+      if (str_detect(input$bt2Options, input$localPresets)) {
+        cmd_line <-
+          str_replace(cmd_line, input$localPresets, input$endToEndPresets)
+        updateTextInput(session, "bt2Options", value = cmd_line)
+      }
+    }
+    else {
+      cmd_line <- update_command_line(
         session,
         "--local",
         input$alignmentType,
         default = "--end-to-end",
         mutually_exclusive_options = c("--end-to-end")
       )
+      if (str_detect(input$bt2Options, input$endToEndPresets)) {
+        cmd_line <-
+          str_replace(cmd_line, input$endToEndPresets, input$localPresets)
+        updateTextInput(session, "bt2Options", value = cmd_line)
+      }
+    }
   })
   
   observeEvent(input$matchBonus, {
     if (input$alignmentType == "--end-to-end")
-      update_command_line(session, "--ma", input$maxPenalty, default = 0)
+      update_command_line(session, "--ma", input$matchBonus, default = 0)
     else
-      update_command_line(session, "--ma", input$maxPenalty, default = 2)
+      update_command_line(session, "--ma", input$matchBonus, default = 2)
   })
   
-  observeEvent(input$maxPenality, {
+  observeEvent(input$maxPenalty, {
     update_command_line(session, "--mp", input$maxPenalty, default = 6)
   })
   
@@ -170,10 +175,49 @@ shinyServer(function(input, output, session) {
     update_command_line(session, "--np", input$nPenalty, default = 1)
   })
   
-  # observeEvent(input$inputFileFormat, {
-  #   cmd_line <- isolate(input$bt2Options)
-  #   update_command_line(session, input$inputFileFormat, TRUE)
-  # })
+  observeEvent(input$minIns, {
+    update_command_line(session, "--minins", input$minIns, default = 0)
+  })
+  
+  observeEvent(input$maxIns, {
+    update_command_line(session, "--maxins", input$maxIns, default = 500)
+  })
+  
+  observeEvent(input$noMixed, {
+    update_command_line(session, "--no-mixed", input$noMixed, default = FALSE)
+  })
+  
+  observeEvent(input$noDiscordant, {
+    update_command_line(session, "--no-discordant", input$noDiscordant, default = FALSE)
+  })
+  
+  observeEvent(input$doveTail, {
+    update_command_line(session, "--dovetail", input$doveTail, default = FALSE)
+  })
+  
+  observeEvent(input$noContain, {
+    update_command_line(session, "--no-contain", input$noContain, default = FALSE)
+  })
+  
+  observeEvent(input$noOverlap, {
+    update_command_line(session, "--no-overlap", input$noOverlap, default = FALSE)
+  })
+  
+  observeEvent(input$mateAlign, {
+    mutually_exclusive_options <-
+      c("--fr",
+        "--rf",
+        "--ff")
+    mutually_exclusive_options <-
+      setdiff(mutually_exclusive_options, input$mateAlign)
+    update_command_line(
+      session,
+      input$mateAlign,
+      input$mateAlign,
+      default = "--fr",
+      mutually_exclusive_options = mutually_exclusive_options
+    )
+  })
   
   observeEvent(input$skip, {
     update_command_line(session, "--skip", input$skip, default = 0)
@@ -227,18 +271,58 @@ shinyServer(function(input, output, session) {
     update_command_line(session, "-N", input$maxMM, default = 0)
   })
   
+  observeEvent(input$extendAttempts, {
+    update_command_line(session, "-D", input$extendAttempts, default = 15)
+  })
+  
+  observeEvent(input$seedCount, {
+    update_command_line(session, "-R", input$seedCount, default = 2)
+  })
+  
+  observeEvent(input$noSq, {
+    update_command_line(session, "--no-sq", input$noSq, default = FALSE)
+  })
+  
+  observeEvent(input$noHead, {
+    update_command_line(session, "--no-head", input$noHead, default = FALSE)
+  })
+  
+  observeEvent(input$omitSecSeq, {
+    update_command_line(session, "--omit-sec-seq", input$omitSecSeq, default = FALSE)
+  })
+  
+  observeEvent(input$samNoQnameTrunc, {
+    update_command_line(session,
+      "--sam-no-qname-trunc",
+      input$samNoQnameTrunc,
+      default = FALSE)
+  })
+  
+  observeEvent(input$xEq, {
+    update_command_line(session, "--xeq", input$xEq, default = FALSE)
+  })
+  
+  observeEvent(input$softClippedUnmappedTlen, {
+    update_command_line(
+      session,
+      "--soft-clipped-unmapped-tlen",
+      input$softClippedUnmappedTlen,
+      default = FALSE
+    )
+  })
+  
   observeEvent(input$localPresets, {
     mutually_exclusive_options <-
       mutually_exclusive_options <-
       c(
-        "--very-fast",
-        "--fast",
-        "--sensitive",
-        "--very-sensitive",
         "--very-fast-local",
         "--fast-local",
         "--sensitive-local",
-        "--very-sensitive-local"
+        "--very-sensitive-local",
+        "--very-fast",
+        "--fast",
+        "--sensitive",
+        "--very-sensitive"
       )
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$localPresets)
@@ -254,14 +338,14 @@ shinyServer(function(input, output, session) {
   observeEvent(input$endToEndPresets, {
     mutually_exclusive_options <-
       c(
-        "--very-fast",
-        "--fast",
-        "--sensitive",
-        "--very-sensitive",
         "--very-fast-local",
         "--fast-local",
         "--sensitive-local",
-        "--very-sensitive-local"
+        "--very-sensitive-local",
+        "--very-fast",
+        "--fast",
+        "--sensitive",
+        "--very-sensitive"
       )
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$endToEndPresets)
@@ -275,7 +359,7 @@ shinyServer(function(input, output, session) {
   })
   
   observe({
-    choices <- c("e_coli", "lambda_virus")
+    choices <- list.files("/indexes")
     updateSelectizeInput(
       session,
       "index",
@@ -283,10 +367,16 @@ shinyServer(function(input, output, session) {
       choices = choices,
       selected = NULL
     )
+    updateSelectizeInput(
+      session,
+      "index2",
+      server = TRUE,
+      choices = choices,
+      selected = NULL
+    )
   })
   
   observeEvent(c(input$mate1, input$mate1_sequence), {
-    print(input$readsAreSequences)
     if (input$readsAreSequences) {
       update_command_line(
         session,
@@ -299,7 +389,7 @@ shinyServer(function(input, output, session) {
       update_command_line(
         session,
         "-1",
-        input$mate1$datapath,
+        basename(input$mate1$name),
         default = "",
         mutually_exclusive_options = "-U"
       )
@@ -319,7 +409,7 @@ shinyServer(function(input, output, session) {
       update_command_line(
         session,
         "-2",
-        input$mate2$datapath,
+        basename(input$mate2$name),
         default = "",
         mutually_exclusive_options = "-U"
       )
@@ -339,15 +429,128 @@ shinyServer(function(input, output, session) {
       update_command_line(
         session,
         "-U",
-        input$unpaired$datapath,
+        basename(input$unpaired$name),
         default = "",
         mutually_exclusive_options = c("-1", "-2")
       )
     }
   })
   
+  observeEvent(input$paired, {
+    cmd_line <- input$bt2Options
+    if (input$paired == "Paired") {
+      cmd_line <- str_replace(cmd_line, paste0("-U", "\\s+\\S+"), "")
+      
+      if (!is.null(input$mate1) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-1", input$mate1$name)
+      }
+      
+      if (!is.null(input$mate1_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-1", input$mate1_sequence)
+      }
+      
+      if (!is.null(input$mate2) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-2", input$mate2$name)
+      }
+      
+      if (!is.null(input$mate2_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-2", input$mate2_sequence)
+      }
+    } else{
+      mutually_exclusive_options <-
+        c(
+          "--fr",
+          "--rf",
+          "--ff",
+          "--no-mixed",
+          "--no-discordant",
+          "--dovetail",
+          "--no-contain",
+          "--no-overlap"
+        )
+      sapply(mutually_exclusive_options, function(opt) {
+        cmd_line <<- str_replace(cmd_line, opt, "")
+      })
+      
+      cmd_line <-
+        str_replace(cmd_line, paste0("-1", "\\s+\\S+"), "")
+      cmd_line <-
+        str_replace(cmd_line, paste0("-2", "\\s+\\S+"), "")
+      cmd_line <-
+        str_replace(cmd_line, paste0("--minins", "\\s+\\S+"), "")
+      cmd_line <-
+        str_replace(cmd_line, paste0("--maxins", "\\s+\\S+"), "")
+      
+      if (!is.null(input$unpaired) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-U", input$unpaired$name)
+      }
+      
+      if (!is.null(input$unpaired_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-U", input$unpaired_sequence)
+      }
+      
+      updateCheckboxInput(session, "noMixed", value = FALSE)
+      updateCheckboxInput(session, "noDiscordant", value = FALSE)
+      updateCheckboxInput(session, "doveTail", value = FALSE)
+      updateCheckboxInput(session, "noContain", value = FALSE)
+      updateCheckboxInput(session, "noOverlap", value = FALSE)
+      updateRadioButtons(session, "mateAlign", selected = "--fr")
+      
+      updateNumericInput(session, "minIns", value = 0)
+      updateNumericInput(session, "maxIns", value = 500)
+      
+    }
+    updateTextAreaInput(session, "bt2Options", value = str_squish(str_trim(cmd_line, side = "both")))
+  })
+  
   observeEvent(input$readsAreSequences, {
+    cmd_line <- input$bt2Options
+    if (input$paired == "Paired") {
+      cmd_line <- str_replace(cmd_line, paste0("-1", "\\s+\\S+"), "")
+      cmd_line <-
+        str_replace(cmd_line, paste0("-2", "\\s+\\S+"), "")
+      
+      
+      if (!is.null(input$mate1) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-1", input$mate1$name)
+      }
+      
+      if (!is.null(input$mate1_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-1", input$mate1_sequence)
+      }
+      
+      if (!is.null(input$mate2) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-2", input$mate2$name)
+      }
+      
+      if (!is.null(input$mate2_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-2", input$mate2_sequence)
+      }
+    } else {
+      cmd_line <- str_replace(cmd_line, paste0("-U", "\\s+\\S+"), "")
+      
+      if (!is.null(input$unpaired) &&
+          input$readsAreSequences == FALSE) {
+        cmd_line <- paste(cmd_line, "-U", input$unpaired$name)
+      }
+      
+      if (!is.null(input$unpaired_sequence) &&
+          input$readsAreSequences == TRUE) {
+        cmd_line <- paste(cmd_line, "-U", input$unpaired_sequence)
+      }
+    }
     update_command_line(session, "-c", input$readsAreSequences, default = FALSE)
+    updateTextAreaInput(session, "bt2Options", value = str_squish(str_trim(cmd_line, side = "both")))
   })
   
   observeEvent(input$index, {
@@ -355,38 +558,150 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$submit, {
-    query <- input$bt2Options %>%
-      str_remove("^bowtie2\\s*") %>%
-      paste("--no-head", "--mm")
-    submit_bowtie2_query(socket, query)
-    sam_output <- character(0)
-    repeat {
-      s <- readLines(socket, n = -1, skipNul = TRUE)
-      sam_output <- paste(sam_output, s, collapse = "", sep = "\n")
-      if (length(s) == 0)
-        break
+    file_inputs <- list()
+    if (input$readsAreSequences == FALSE) {
+      if (input$paired == "Unpaired") {
+        file_inputs[[1]] <- input$unpaired
+      } else {
+        file_inputs[[1]] <- input$mate1
+        file_inputs[[2]] <- input$mate2
+      }
     }
-    removeTab(inputId = "tabs", target = "SAM Output")
+    
+    out <-
+      submit_bowtie2_query(input$bt2Options, input$upto, file_inputs, input$index)
+    
+    if (out$stdout == "") {
+      usage_lines <- str_split(bt2_usage, "\n")[[1]]
+      error_lines <- str_split(out$stderr, "\n")[[1]]
+      
+      err <- setdiff(error_lines, usage_lines) %>%
+        Filter(function(x)
+          str_detect(x, "^([A-Z]|--)"), .)
+      
+      createAlert(
+        session,
+        "alert",
+        "bowtie2Alert",
+        title = "Bowtie2 Error",
+        content = paste(err, collapse = "\n"),
+        append = FALSE,
+        style = "error"
+      )
+      
+      updateTabsetPanel(session, "bowtie2tabs", selected = "Welcome")
+      return(NULL)
+    }
+    
+    sam_output <<- out$stdout
+    
+    removeTab(inputId = "bowtie2tabs", target = "SAM Output")
     insertTab(
-      inputId = "tabs",
+      inputId = "bowtie2tabs",
       tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
-               HTML(highlight_sam(sam_output))),
-      target = "Manual"
+        uiOutput("moreControls"),
+        div(id = "sam_output", div(id = "highlighted_output", HTML(highlight_sam(out$stdout))))),
+      target = "Welcome",
+      select = TRUE
     )
   })
   
-  observe({
+  observeEvent(input$highlight, {
+    sam <- if (input$highlight %% 2 == 0) {
+      highlight_sam(sam_output)
+    } else {
+      highlight_sam(sam_output, "bw")
+    }
     
-    updateWidgetsFromURL(session$clientData$url_search)
+    removeUI(selector = "div#highlighted_output", immediate = TRUE)
+    insertUI(selector = "div#sam_output", where = "afterBegin", div(id = "highlighted_output", HTML(sam)))
+  })
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("bowtie2-", format(Sys.time(), "%m%d%Y%H%M%S"), ".sam", sep = "")
+    },
+    content = function(file) {
+      write_file(sam_output, file)
+    }
+  )
+  
+  observe({
+    invalidateLater(5000, session)
+    closeAlert(session, "bowtie2Alert")
+  })
+  
+  observeEvent(input$crisprSubmit, {
+    if (input$crisprInput == "sequence") {
+      data <- paste(">r1", input$crisprSequence, sep = "\n")
+      hash <- digest(data, algo = "sha256")
+      
+      filepath <-
+        paste(tempdir(), paste0(substr(hash, 0, 7), ".fa"), sep = "/")
+      if (!file.exists(filepath)) {
+        cat(data, file = filepath)
+      }
+    } else {
+      filepath <- input$crisprFile$datapath
+    }
+    query <-
+      paste("-x",
+        input$index2,
+        "-F",
+        paste0(input$kmer+1, ",", input$offset),
+        filepath)
+    out <- submit_bowtie2_query(query, index = input$index2)
+    
+    if (out$stdout == "") {
+      usage_lines <- str_split(bt2_usage, "\n")[[1]]
+      error_lines <- str_split(out$stderr, "\n")[[1]]
+      
+      err <- setdiff(error_lines, usage_lines) %>%
+        Filter(function(x)
+          str_detect(x, "^Error:"), .)
+      
+      createAlert(
+        session,
+        "alert",
+        "bowtie2Alert",
+        title = "Bowtie2 Error",
+        content = paste(err, collapse = "\n"),
+        append = FALSE,
+        style = "error"
+      )
+      
+      updateTabsetPanel(session, "crisprtabs", selected = "Welcome")
+      return(NULL)
+    }
+    
+    removeTab(inputId = "crisprtabs", target = "SAM Output")
+    insertTab(
+      inputId = "crisprtabs",
+      tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+        HTML(highlight_sam(out$stdout))),
+      target = "Welcome",
+      select = TRUE
+    )
+  })
+  
+  observeEvent(input$tutorial, {
+    introjs(
+      session,
+      options = list(
+        "nextLabel" = "Next",
+        "prevLabel" = "Back",
+        "skipLabel" = "Skip"
+      )
+    )
   })
   
   update_command_line <-
     function(session,
-             option,
-             value,
-             default = NULL,
-             mutually_exclusive_options = NULL,
-             replacement = NULL) {
+      option,
+      value,
+      default = NULL,
+      mutually_exclusive_options = NULL,
+      replacement = NULL) {
       cmd_line <- input$bt2Options
       if (is.na(value))
         return(NULL)
@@ -412,7 +727,11 @@ shinyServer(function(input, output, session) {
         }
       } else {
         sapply(mutually_exclusive_options, function(opt) {
-          cmd_line <<- str_replace(cmd_line, paste0(opt, "(\\s+\\S+)?"), "")
+          cmd_line <<- if (flag) {
+            str_replace(cmd_line, opt, "")
+          } else {
+            str_replace(cmd_line, paste0(opt, "(\\s+\\S+)?"), "")
+          }
         })
         
         if (value != default) {
@@ -426,7 +745,10 @@ shinyServer(function(input, output, session) {
       if (str_detect(cmd_line, "^bowtie2") == FALSE) {
         cmd_line <- paste("bowtie2", cmd_line)
       }
-      updateTextAreaInput(session, "bt2Options", value = str_squish(str_trim(cmd_line, side = "both")))
+      cmd_line <- str_squish(str_trim(cmd_line, side = "both"))
+      updateTextAreaInput(session, "bt2Options", value = cmd_line)
+      
+      cmd_line
     }
   
   observeEvent(input$bookmark, {
@@ -437,61 +759,48 @@ shinyServer(function(input, output, session) {
   })
   
   output$clip <- renderUI({
-    rclipButton("clipbtn", "Copy Command", input$bt2Options, icon("clipboard"))
+    rclipButton("clipbtn",
+      "Copy Command",
+      input$bt2Options,
+      icon("clipboard"))
   })
   
-  # output$copyUrl <- renderUI({
-  #   rvs <- reactiveValuesToList(input)
-  #   inputIds <- names(rvs)
-  #   inputIdsToExclude <- c(
-  #     "readsAreSequences",
-  #     "extendAttempts",
-  #     "tabs",
-  #     "mate2_sequence",
-  #     "mate1_sequence",
-  #     "index",
-  #     "noContain",
-  #     "bt2Options",
-  #     "sidebarItemExpanded"
-  #   )
-  #   inputIds <- setdiff(inputIds, inputIdsToExclude)
-  #   filteredRVs <- rvs[inputIds]
-  #   url <- URLencode(paste(names(filteredRVs), filteredRVs, sep = "=", collapse = "&"))
-  #   rclipButton("clipbtn2", "Copy URL", url, icon("clipboard"))
-  # })
-  
-  run_bowtie2 <- function() {
-    if (!is_bowtie2_running()) {
-      bowtie2_binary_path <-
-        paste(getwd(), "bowtie2", "bowtie2-align-s", sep = "/")
-      bowtie2_process <<-
-        process$new(
-          "sh",
-          c(
-            "-c",
-            paste0(getwd(), "/bowtie2/bowtie2-align-s --server")
-          ),
-        stdout = "|", stderr = "|")
-      Sys.sleep(1)
-      print(bowtie2_process$read_error_lines())
-      create_bowtie2_socket()
+  submit_bowtie2_query <-
+    function(query,
+      upto = 1000,
+      file_inputs = NULL,
+      index = NULL) {
+      query <- query %>%
+        str_remove("^bowtie2\\s*") %>%
+        paste("--mm", "--no-head")
+      bt2 <- paste("/software", "bowtie2/bowtie2", sep = "/")
+      
+      if (str_detect(query, "--upto") == FALSE) {
+        query <- paste(query, "--upto", upto)
+      }
+      
+      if (!is.null(file_inputs)) {
+        sapply(file_inputs, function(i) {
+          query <<- str_replace(query, i$name, i$datapath)
+        })
+      }
+      
+      if (index != "") {
+        query <- str_replace(query, index, "genome")
+      }
+      
+      argv <- str_split(query, "\\s+")[[1]]
+      BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
+      
+      run(
+        bt2,
+        argv,
+        env = c(Sys.getenv(), BOWTIE2_INDEXES = BOWTIE2_INDEXES),
+        error_on_status = FALSE
+      )
     }
-  }
   
-  is_bowtie2_running <- function() {
-    !is.null(bowtie2_process) && bowtie2_process$is_alive()
-  }
-  
-  create_bowtie2_socket <- function() {
-    socket <<- socketConnection(port = 22000)
-  }
-  
-  submit_bowtie2_query <- function(socket, query) {
-    writeLines(query, socket)
-    Sys.sleep(1)
-  }
-  
-  highlight_sam <- function(sam) {
+  highlight_sam <- function(sam, style = "perldoc") {
     pygments <- import("pygments")
     pygments.lexers <- import("pygments.lexers")
     pygments.formatters <- import("pygments.formatters")
@@ -500,72 +809,37 @@ shinyServer(function(input, output, session) {
     sam_lexer <-
       pygments.lexers$load_lexer_from_file(path_to_sam_lexer, "SamLexer")
     formatter <-
-      pygments.formatters$HtmlFormatter(style = "perldoc")
+      pygments.formatters$HtmlFormatter(style = style)
     formatter$noclasses = TRUE
     pygments$highlight(sam, sam_lexer, formatter)
   }
   
-  updateWidgetsFromURL <- function(url) {
-    q <- parseQueryString(url)
-    rvs <-reactiveValuesToList(input)
-    for (inputId in names(rvs)) {
-      val <- q[[inputId]]
-      if (is.null(val)) {
-        next
-      }
-
-      if (inputId == "typeOfQualityValues") {
-        updateRadioButtons(session, inputId, selected = val)
-      } else if (inputId == "skip") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "upto") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "inputFileFormat") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "trim3") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "trim5") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "alignmentType") {
-        updateRadioButtons(session, inputId, selected = val)
-      } else if (inputId == "seenLen") {
-        updateSliderInput(session, inputId, value = val)
-      } else if (inputId == "interval") {
-        updateTextInput(session, inputId, value = val)
-      } else if (inputId == "interval") {
-        
-      } else if (inputId == "nCeil") {
-        updateTextInput(session, inputId, value = val)
-      } else if (inputId == "maxMM") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "dPad") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "ignoreQuals") {
-        updateCheckboxInput(session, inputId, value = val)  
-      } else if (inputId == "noFw") {
-        updateCheckboxInput(session, inputId, value = val)
-      } else if (inputId == "noRc") {
-        updateCheckboxInput(session, inputId, value = val)
-      } else if (inputId == "no1MmUpFront") {
-        updateCheckboxInput(session, inputId, value = val)
-      } else if (inputId == "matchBonus") {
-        updateNumericInput(session, inputId, value = val) 
-      } else if (inputId == "scoreMin") {
-        updateNumericInput(session, inputId, value = val) 
-      } else if (inputId == "maxPenalty") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "nPenalty") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "extendAttempts") {
-        updateNumericInput(session, inputId, value = val) 
-      } else if (inputId == "seedCount") {
-        updateNumericInput(session, inputId, value = val)
-      } else if (inputId == "paired") {
-        updateCheckboxInput(session, inputId, value = val) 
-      } else {
-        
-      }
-    }
+  get_help_text <- function(opt) {
+    id <- paste("bowtie2-options", opt, sep = "-")
+    tags <- soup$find(id = id)$parent$find_all("p")
+    sapply(1:length(tags) - 1, function(i) { as.character(tags[i]) })
   }
   
+  show_help_text <- function(opts, session) {
+    text <- ""
+    sapply(opts, function(opt) {
+      t <- paste(get_help_text(opt), collapse = "\n")
+      text <<- paste(text, t, sep = "\n")
+    })
+    # text <- get_help_text(opt)
+    # text <- paste(text, collapse = "\n")
+    
+    observe({
+      insertTab(inputId = "bowtie2tabs",
+        tabPanel("Help", HTML(text)),
+        target = "Welcome",
+        select = TRUE, session = session)
+    })
+  }
+  
+  remove_help_text <- function(session) {
+    observe({
+      removeTab("bowtie2tabs", "Help", session = session)
+    })
+  }
 })

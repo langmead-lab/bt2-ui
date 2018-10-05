@@ -1,0 +1,14 @@
+body {
+    font-family: Helvetica;
+}
+
+.skin-blue .main-header .logo {
+    background-color: #3c8dbc;
+}
+.skin-blue .main-header .logo:hover {
+    background-color: #3c8dbc;
+}
+
+#bt2Options { 
+    font-family: courier, consolas;
+}
