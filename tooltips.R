@@ -1,13 +1,13 @@
 register_mouseover_events <- function(session) {
   onevent("mouseenter", "upto", show_help_text("u", session))
   onevent("mouseleave", "upto", remove_help_text(session))
-  
+
   onevent("mouseenter", "skip", show_help_text("s", session))
   onevent("mouseleave", "skip", remove_help_text(session))
-  
+
   onevent("mouseenter", "typeOfQualityValues", show_help_text(c("phred33-quals", "phred64-quals", "int-quals"), session))
   onevent("mouseleave", "typeOfQualityValues", remove_help_text(session))
-  
+
   onevent("mouseenter", "trim5", show_help_text("5", session))
   onevent("mouseleave", "trim5", remove_help_text(session))
 
@@ -86,14 +86,20 @@ register_mouseover_events <- function(session) {
   onevent("mouseenter", "noContain", show_help_text("no-contain", session))
   onevent("mouseleave", "noContain", remove_help_text(session))
 
+  onevent("mouseenter", "noOverlap", show_help_text("no-overlap", session))
+  onevent("mouseleave", "noOverlap", remove_help_text(session))
+
+  onevent("mouseenter", "doveTail", show_help_text("dovetail", session))
+  onevent("mouseleave", "doveTail", remove_help_text(session))
+
+  onevent("mouseenter", "noMixed", show_help_text("no-mixed", session))
+  onevent("mouseleave", "noMixed", remove_help_text(session))
+
   onevent("mouseenter", "omitSecSeq", show_help_text("omit-sec-seq", session))
   onevent("mouseleave", "omitSecSeq", remove_help_text(session))
 
   onevent("mouseenter", "samNoQnameTrunc", show_help_text("sam-no-qname-trunc", session))
   onevent("mouseleave", "samNoQnameTrunc", remove_help_text(session))
-
-  onevent("mouseenter", "noSq", show_help_text("no-sq", session))
-  onevent("mouseleave", "noSq", remove_help_text(session))
 
   onevent("mouseenter", "xEq", show_help_text("xeq", session))
   onevent("mouseleave", "xEq", remove_help_text(session))
@@ -106,5 +112,5 @@ register_mouseover_events <- function(session) {
 
   onevent("mouseenter", "inputFileFormat", show_help_text(c("q", "f", "tab5", "tab6"), session))
   onevent("mouseleave", "inputFileFormat", remove_help_text(session))
-  
+
 }

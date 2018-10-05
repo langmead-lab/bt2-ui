@@ -61,7 +61,7 @@ body <- dashboardBody(
   useShinyjs(),
   introjsUI(),
   rclipboardSetup(),
-  
+
   tabItems(
     tabItem("bowtie2", bowtie2_tab),
     tabItem("crispr", crispr_tab),

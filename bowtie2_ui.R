@@ -129,7 +129,7 @@ bowtie2_tab <- fluidRow(
           "Welcome",
           h4("Welcome to the Bowtie 2 UI!"),
           p("Click the tutorial button below to get started"),
-          
+
           bsButton("tutorial", label = "Get Started", style = "success")
           # includeHTML("test.html"))
         )
@@ -138,7 +138,7 @@ bowtie2_tab <- fluidRow(
   ),
   column(
     width = 3,
-    
+
     # Input options
     introBox(
       box(
@@ -211,8 +211,8 @@ bowtie2_tab <- fluidRow(
       data.step = 4,
       data.intro = "The Input options allow you to specify how Bowtie 2 processes your reads "
     ),
-    
-    
+
+
     # Alignment options
     introBox(
       box(
@@ -289,16 +289,16 @@ bowtie2_tab <- fluidRow(
           label = h5("Disallow gaps within <int> nucleotides of read extremes"),
           value = 4
         ),
-        
+
         checkboxInput("ignoreQuals", label = "Treat all quality values as 30 on Phred scale"),
-        checkboxInput("noFw", label = "Do not align reverse-compliment version of read"),
+        checkboxInput("noFw", label = "Do not align forward (original) version of read"),
         checkboxInput("noRc", label = "Do not align reverse-compliment version of read"),
         checkboxInput("no1MmUpfront", label = "Do not allow 1 mismatch alignments before attempting to scan for the optimal seeded alignments")
       ),
       data.step = 5,
       data.intro = "Alignment options control how Bowtie 2 aligns reads to the reference genome."
     ),
-    
+
     # Scoring options
     introBox(
       box(
@@ -349,13 +349,13 @@ bowtie2_tab <- fluidRow(
       data.step = 6,
       data.intro = "Scoring options affect the way Bowtie 2 assess the alignment"
     ),
-    
+
     # Reporting
     # box(width = NULL, title = "Reporting", collapsible = TRUE, collapsed = TRUE,
     #   radioButtons(inputId = "reporting", label = NULL,
     #                choices = list("Default" = "", "Report up to "))
     # ),
-    
+
     # Effort
     box(
       width = NULL,
@@ -413,7 +413,7 @@ bowtie2_tab <- fluidRow(
         checkboxInput("noOverlap", "Not concordant when mates overlap at all")
       )
     ),
-    
+
     # Output options
     introBox(
       box(
@@ -421,7 +421,6 @@ bowtie2_tab <- fluidRow(
         title = "Output",
         status = "info",
         collapsible = TRUE,
-        checkboxInput("noSq", "Suppress @SQ header lines"),
         checkboxInput(
           "omitSecSeq",
           "Put '*' in SEQ and QUAL fields for secondary alignments"
