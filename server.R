@@ -19,6 +19,7 @@ library(rintrojs)
 library(magrittr)
 library(digest)
 library(shinyBS)
+library(dplyr)
 
 sam_output <- ""
 
@@ -649,6 +650,7 @@ shinyServer(function(input, output, session) {
         input$index2,
         "-F",
         paste0(input$kmer+1, ",", input$offset),
+        "-a",
         filepath)
     out <- submit_bowtie2_query(query, index = input$index2)
 
@@ -682,7 +684,72 @@ shinyServer(function(input, output, session) {
       target = "Welcome",
       select = TRUE
     )
+    
+    output$kmer_alignments <- renderUI({
+      box(width = NULL, 
+        tags$p(style = "font-family: monospace;", input$crisprSequence, tags$br(), HTML(kmer_diagram(out$stdout))))
+    })
   })
+  
+  kmer_diagram <- function(sam) {
+    df <- read_tsv(sam, col_names = FALSE)
+    read_names_and_count <- df %>% group_by(X1) %>% summarize(count = n())
+    read_names_and_kmers <- df %>% filter(bitwAnd(X2, 16) == 0) %>% select(X1, X10) %>% unique
+    
+    data <- inner_join(read_names_and_kmers, read_names_and_count)
+    format_kmers(data, input$crisprSequence, input$kmer)
+  }
+  
+  format_kmers <- function(data, sequence, kmer_length) {
+    field_widths <- str_locate(sequence, data[[2]])[, 2]
+    warning(field_widths)
+    padded_kmer_counts <-
+      str_pad(data[[3]],
+        width = kmer_length,
+        side = "both",
+        pad = "-")
+    padded_kmer_counts <-
+      str_replace_all(padded_kmer_counts, "^-|-$", "^")
+    # padded_kmer_counts <- sapply(padded_kmer_counts, function(s) { format(span(s, class = "kmer")) }, USE.NAMES = FALSE)
+    start <- kmer_length
+    if (max(field_widths) %% kmer_length == 0) {
+      end <- ceiling((max(field_widths) + 1) / kmer_length) * kmer_length
+    } else {
+      end <- ceiling((max(field_widths)) / kmer_length) * kmer_length
+    }
+    field_widths <-
+      split(field_widths,
+        cut(
+          field_widths,
+          breaks = seq(start, end, by = kmer_length),
+          include.lowest = TRUE,
+          right = FALSE
+        ))
+    off <- 0
+    r <- 1:kmer_length
+    out <- vector("character", kmer_length)
+    for (i in 1:length(field_widths)) {
+      # index <- (i-1) * kmer_length + seq_along(field_widths[[i]])
+      index <- seq_along(field_widths[[i]]) + off
+      present_rows <- field_widths[[i]] %% kmer_length + 1
+      missing_rows <-
+        setdiff(r, field_widths[[i]] %% kmer_length + 1)
+      if (i == 1) {
+        out[present_rows] <-
+          str_pad(padded_kmer_counts[index], width = field_widths[[i]], pad = " ") # %>% span(class = "kmer") %>% format()
+        out[missing_rows] <-
+          str_dup(" ", missing_rows + kmer_length)
+      } else {
+        out[present_rows] <-
+          paste0(out[present_rows], padded_kmer_counts[index]) #%>% span(class = "kmer") %>% format())
+        out[missing_rows] <-
+          paste0(out[missing_rows], str_dup(" ", kmer_length))
+      }
+      off <- off + length(index)
+    }
+    
+    paste(str_replace_all(out, " ", "&nbsp;"), collapse = "<br/>")
+  }
 
   observeEvent(input$tutorial, {
     introjs(
