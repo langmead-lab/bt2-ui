@@ -11,4 +11,6 @@ COPY MANUAL.markdown /srv/shiny-server/bt2-ui/
 COPY *.R /srv/shiny-server/bt2-ui/
 COPY *.py /srv/shiny-server/bt2-ui/
 
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+
 RUN R -e "rmarkdown::render('/srv/shiny-server/bt2-ui/MANUAL.markdown',output_file='/srv/shiny-server/bt2-ui/www/MANUAL.html')"
