@@ -108,7 +108,7 @@ header <- customDashboardHeader(
     ),
     style = "padding-left:1px;"
   ),
-  menuItem("Bowtie 2", tabName = "bowtie2"),
+  menuItem("Bowtie 2", tabName = "bowtie2", selected = TRUE),
   menuItem("CRISPR", tabName = "crispr"),
   menuItem("Manual", tabName = "manual"),
   tags$li(

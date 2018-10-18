@@ -619,7 +619,7 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(input$bowtie2tabs, {
-    if (input$bowtie2tabs == "Welcome") {
+    if (input$bowtie2tabs == "SAM Output") {
       shinyjs::hide("bowtie2controls")
     } else {
       shinyjs::show("bowtie2controls")
@@ -768,7 +768,7 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(input$crisprtabs, {
-    if (input$crisprtabs == "Welcome") {
+    if (input$crisprtabs != "SAM Output") {
       shinyjs::hide("crisprcontrols")
     } else {
       shinyjs::show("crisprcontrols")
@@ -939,7 +939,7 @@ shinyServer(function(input, output, session) {
       index = NULL) {
       query <- query %>%
         str_remove("^bowtie2\\s*") %>%
-        paste("--mm", "--no-head")
+        paste("--shmem", "--no-head")
       bt2 <- paste("/software", "bowtie2/bowtie2", sep = "/")
 
       if (str_detect(query, "--upto") == FALSE) {
