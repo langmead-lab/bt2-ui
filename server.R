@@ -619,7 +619,7 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(input$bowtie2tabs, {
-    if (input$bowtie2tabs == "SAM Output") {
+    if (input$bowtie2tabs != "SAM Output") {
       shinyjs::hide("bowtie2controls")
     } else {
       shinyjs::show("bowtie2controls")
