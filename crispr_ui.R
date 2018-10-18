@@ -48,11 +48,28 @@ crispr_tab <- fluidRow(column(
     ),
     actionButton("crisprSubmit", label = "Submit")
   ),
+  uiOutput("kmer_alignments"),
   box(width = NULL,
     tabsetPanel(id = "crisprtabs",
       tabPanel(
         "Welcome",
         h4("Welcome to the CRISPR!")
-      ))),
+      )),
+    absolutePanel(
+      id = "crisprcontrols",
+      top = 0,
+      right = 0,
+      div(
+        style = "padding: 10px;",
+        div(style="display: inline-block;vertical-align:top; width: 300px;", selectizeInput("kmer_filter", label = NULL,  choices = NULL, options = list(placeholder = "Filter by kmer"))),
+        downloadButton("crisprDownloadSAM", "Download"),
+        actionButton("crisprCopy", "Copy", icon = icon("copy")),
+        actionButton(
+          "crisprToggleHighlight",
+          "Toggle Highlight",
+          icon = icon("palette")
+        )
+      )
+    )),
   bsAlert("alert")
 ))

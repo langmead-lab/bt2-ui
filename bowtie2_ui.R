@@ -128,10 +128,32 @@ bowtie2_tab <- fluidRow(
         tabPanel(
           "Welcome",
           h4("Welcome to the Bowtie 2 UI!"),
+          p(
+            tags$b("Bowtie 2"),
+            "is an ultrafast, memory-efficient short read aligner.
+            It aligns short DNA sequences (reads) to the human genome
+            at a rate of over 25 million 35-bp reads per hour.
+            Bowtie indexes the genome with an FM index to keep its
+            memory footprint small: typically about 2.2 GB for the
+            human genome (2.9 GB for paired-end)."
+          ),
           p("Click the tutorial button below to get started"),
 
           bsButton("tutorial", label = "Get Started", style = "success")
-          # includeHTML("test.html"))
+        )
+      ), absolutePanel(
+        id = "bowtie2controls",
+        top = 0,
+        right = 0,
+        div(
+          style = "padding: 10px;",
+          downloadButton("bt2DownloadSAM", "Download"),
+          actionButton("bt2CopySam", "Copy", icon = icon("copy")),
+          actionButton(
+            "bt2ToggleHighlight",
+            "Toggle Highlight",
+            icon = icon("palette")
+          )
         )
       )),
     bsAlert("alert")

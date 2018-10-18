@@ -12,3 +12,20 @@ body {
 #bt2Options { 
     font-family: courier, consolas;
 }
+
+.kmer {
+    cursor: pointer;
+}
+
+#highlight {
+    background-color: lightblue;
+}
+
+#font_size_increase {
+    display: block;
+    margin-bottom: 2px;
+}
+
+#font_size_decrease {
+    display: block;
+}

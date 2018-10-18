@@ -21,9 +21,12 @@ library(digest)
 library(shinyBS)
 library(dplyr)
 
-sam_output <- ""
-
 shinyServer(function(input, output, session) {
+  crispr_sam_tab_exists <- FALSE
+  bowtie2_sam_tab_exists <- FALSE
+
+  rvs <- reactiveValues()
+
   source("tooltips.R", local = TRUE)
 
   register_mouseover_events(session)
@@ -36,38 +39,11 @@ shinyServer(function(input, output, session) {
   shinyjs::runjs("$('#mate2_sequence').attr('maxlength', 500)")
   shinyjs::runjs("$('#unpaired_sequence').attr('maxlength', 500)")
 
-  render_controls <- function() {
-    output$moreControls <- renderUI({
-      absolutePanel(
-        id = "controls",
-        bottom = 0,
-        left = 0,
-        div(
-          style = "padding: 20px;",
-          downloadButton("downloadData", "Download"),
-          actionButton("copy", "Copy", icon = icon("copy")),
-          actionButton(
-            "highlight",
-            "Toggle Highlight",
-            icon = icon("palette")
-          )
-        )
-      )
-    })
-  }
-
-  remove_controls <- function(session) {
-    removeUI(selector = "div#moreControls", session = session)
-  }
-
-  onevent("mouseenter", "sam_output", render_controls())
-  onevent("mouseleave", "sam_output", remove_controls(session))
-
   updateCheckboxInput(session, "readsAreSequences", value = FALSE)
 
-  observeEvent(input$tabs, {
-    addClass(selector = "body", class = "sidebar-collapse")
-  })
+  # observeEvent(input$tabs, {
+  #   addClass(selector = "body", class = "sidebar-collapse")
+  # })
 
   observeEvent(input$nCeil, {
     update_command_line(session, "--n-ceil", input$nCeil, default = 15)
@@ -594,44 +570,64 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
 
-    sam_output <<- out$stdout
+    rvs$bt2_sam <- out$stdout
 
-    removeTab(inputId = "bowtie2tabs", target = "SAM Output")
-    insertTab(
-      inputId = "bowtie2tabs",
-      tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
-        uiOutput("moreControls"),
-        div(id = "sam_output", div(id = "highlighted_output", HTML(highlight_sam(out$stdout))))),
-      target = "Welcome",
-      select = TRUE
-    )
-  })
-
-  observeEvent(input$highlight, {
-    sam <- if (input$highlight %% 2 == 0) {
-      highlight_sam(sam_output)
-    } else {
-      highlight_sam(sam_output, "bw")
+    if (!bowtie2_sam_tab_exists) {
+      insertTab(
+        inputId = "bowtie2tabs",
+        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+          uiOutput("bt2_output")),
+        target = "Welcome",
+        select = TRUE
+      )
+      bowtie2_sam_tab_exists <<- TRUE
     }
-
-    removeUI(selector = "div#highlighted_output", immediate = TRUE)
-    insertUI(selector = "div#sam_output", where = "afterBegin", div(id = "highlighted_output", HTML(sam)))
   })
 
-  output$downloadData <- downloadHandler(
+  observeEvent(c(rvs$bt2_sam, input$bt2ToggleHighlight), {
+    output$bt2_output <- renderUI({
+      if (input$bt2ToggleHighlight %% 2 == 0) {
+        HTML(highlight_sam(rvs$bt2_sam))
+      } else {
+        HTML(highlight_sam(rvs$bt2_sam, "bw"))
+      }
+    })
+  })
+
+  output$bt2DownloadSAM <- downloadHandler(
     filename = function() {
-      paste("bowtie2-", format(Sys.time(), "%m%d%Y%H%M%S"), ".sam", sep = "")
+      paste("bowtie2-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".sam",
+        sep = "")
     },
     content = function(file) {
-      write_file(sam_output, file)
+      write_file(rvs$bt2_sam, file)
     }
   )
+
+  output$bt2Copy <- renderUI({
+    rclipButton("bt2ClipBtn",
+      "Copy Command",
+      rvs$bt2_sam,
+      icon("clipboard"))
+  })
 
   observe({
     invalidateLater(5000, session)
     closeAlert(session, "bowtie2Alert")
   })
 
+  observeEvent(input$bowtie2tabs, {
+    if (input$bowtie2tabs == "Welcome") {
+      shinyjs::hide("bowtie2controls")
+    } else {
+      shinyjs::show("bowtie2controls")
+    }
+  })
+
+
+  #### CRISPR
   observeEvent(input$crisprSubmit, {
     if (input$crisprInput == "sequence") {
       data <- paste(">r1", input$crisprSequence, sep = "\n")
@@ -649,7 +645,7 @@ shinyServer(function(input, output, session) {
       paste("-x",
         input$index2,
         "-F",
-        paste0(input$kmer+1, ",", input$offset),
+        paste0(input$kmer + 1, ",", input$offset),
         "-a",
         filepath)
     out <- submit_bowtie2_query(query, index = input$index2)
@@ -676,30 +672,125 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
 
-    removeTab(inputId = "crisprtabs", target = "SAM Output")
-    insertTab(
-      inputId = "crisprtabs",
-      tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
-        HTML(highlight_sam(out$stdout))),
-      target = "Welcome",
-      select = TRUE
+    rvs$crispr_sam <- out$stdout
+
+    if (!crispr_sam_tab_exists) {
+      insertTab(
+        inputId = "crisprtabs",
+        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+          uiOutput("crispr_output")),
+        target = "Welcome",
+        select = TRUE
+      )
+      crispr_sam_tab_exists <<- TRUE
+    }
+
+    fig <- kmer_diagram(rvs$crispr_sam)
+    updateSelectizeInput(
+      session,
+      "kmer_filter",
+      choices = crispr_data[[2]],
+      selected = NULL,
+      server = TRUE
     )
-    
+
     output$kmer_alignments <- renderUI({
-      box(width = NULL, 
-        tags$p(style = "font-family: monospace;", input$crisprSequence, tags$br(), HTML(kmer_diagram(out$stdout))))
+      box(
+        width = NULL,
+        tags$p(
+          id = "kmer_diagram",
+          style = "font-family: monospace;",
+          span(id = "sequence_", input$crisprSequence),
+          tags$br(),
+          HTML(fig),
+          absolutePanel(
+            style = "padding: 5px;",
+            actionButton("font_size_increase", NULL, icon = icon("plus")),
+            actionButton("font_size_decrease", NULL, icon = icon("minus")),
+            bottom = 0,
+            right = 0
+          ),
+          tags$script(src = "script.js")
+        )
+      )
     })
   })
-  
+
+  observeEvent(rvs$crispr_sam, {
+    output$crispr_output <- renderUI({
+      HTML(highlight_sam(rvs$crispr_sam))
+    })
+  })
+
+  observeEvent(c(
+    rvs$crispr_sam,
+    input$kmer_filter,
+    input$crisprToggleHighlight
+  ),
+    {
+      out <- rvs$crispr_sam
+
+      if (input$kmer_filter != "") {
+        pat <-
+          paste(input$kmer_filter,
+            reverse_complement(input$kmer_filter),
+            sep = "|")
+        out <- str_split(rvs$crispr_sam, "\n") %>% {
+          str_subset(.[[1]], pat)
+        } %>% str_flatten(collapse = "\n")
+      }
+
+      updateSelectizeInput(session, "kmer_filter", selected = input$kmer_filter)
+
+      output$crispr_output <- renderUI({
+        if (input$crisprToggleHighlight %% 2 == 0) {
+          HTML(highlight_sam(out))
+        } else {
+          HTML(highlight_sam(out, "bw"))
+        }
+      })
+    })
+
+  output$crisprDownloadSAM <- downloadHandler(
+    filename = function() {
+      paste("crispr-", format(Sys.time(), "%m%d%Y%H%M%S"), ".sam", sep = "")
+    },
+    content = function(file) {
+      write_file(rvs$crispr_sam, file)
+    }
+  )
+
+  output$crisprCopy <- renderUI({
+    rclipButton("crisprClipBtn",
+      "Copy Command",
+      rvs$crispr_sam,
+      icon("clipboard"))
+  })
+
+  observeEvent(input$crisprtabs, {
+    if (input$crisprtabs == "Welcome") {
+      shinyjs::hide("crisprcontrols")
+    } else {
+      shinyjs::show("crisprcontrols")
+    }
+  })
+
+  reverse_complement <- function(kmer) {
+    chartr("ACTG", "TGAC", kmer) %>% stringi::stri_reverse()
+  }
+
   kmer_diagram <- function(sam) {
     df <- read_tsv(sam, col_names = FALSE)
-    read_names_and_count <- df %>% group_by(X1) %>% summarize(count = n())
-    read_names_and_kmers <- df %>% filter(bitwAnd(X2, 16) == 0) %>% select(X1, X10) %>% unique
-    
-    data <- inner_join(read_names_and_kmers, read_names_and_count)
-    format_kmers(data, input$crisprSequence, input$kmer)
+    read_names_and_count <-
+      df %>% group_by(X1) %>% summarize(count = n())
+    read_names_and_kmers <-
+      df %>% filter(bitwAnd(X2, 16) == 0) %>% select(X1, X10) %>% unique
+
+    crispr_data <<-
+      inner_join(read_names_and_kmers, read_names_and_count)
+    format_kmers(crispr_data, input$crisprSequence, input$kmer)
   }
-  
+
   format_kmers <- function(data, sequence, kmer_length) {
     field_widths <- str_locate(sequence, data[[2]])[, 2]
     warning(field_widths)
@@ -725,9 +816,17 @@ shinyServer(function(input, output, session) {
           include.lowest = TRUE,
           right = FALSE
         ))
+
+    kmer_index <- 1
     off <- 0
     r <- 1:kmer_length
     out <- vector("character", kmer_length)
+    add_span_tag <- function(s) {
+      s <-
+        span(s, id = data[[2]][kmer_index], class = "kmer") %>% format()
+      kmer_index <<- kmer_index + 1
+      s
+    }
     for (i in 1:length(field_widths)) {
       # index <- (i-1) * kmer_length + seq_along(field_widths[[i]])
       index <- seq_along(field_widths[[i]]) + off
@@ -736,30 +835,31 @@ shinyServer(function(input, output, session) {
         setdiff(r, field_widths[[i]] %% kmer_length + 1)
       if (i == 1) {
         out[present_rows] <-
-          str_pad(padded_kmer_counts[index], width = field_widths[[i]], pad = " ") # %>% span(class = "kmer") %>% format()
+          str_pad(padded_kmer_counts[index],
+            width = field_widths[[i]],
+            pad = "~") %>% sapply(add_span_tag, USE.NAMES = FALSE)
         out[missing_rows] <-
-          str_dup(" ", missing_rows + kmer_length)
+          str_dup("~", missing_rows + kmer_length)
       } else {
         out[present_rows] <-
-          paste0(out[present_rows], padded_kmer_counts[index]) #%>% span(class = "kmer") %>% format())
+          paste0(out[present_rows],
+            padded_kmer_counts[index] %>% sapply(add_span_tag, USE.NAMES = FALSE))
         out[missing_rows] <-
-          paste0(out[missing_rows], str_dup(" ", kmer_length))
+          paste0(out[missing_rows], str_dup("~", kmer_length))
       }
       off <- off + length(index)
     }
-    
-    paste(str_replace_all(out, " ", "&nbsp;"), collapse = "<br/>")
+
+    paste(str_replace_all(out, "~", "&nbsp;"), collapse = "<br/>")
   }
 
   observeEvent(input$tutorial, {
-    introjs(
-      session,
+    introjs(session,
       options = list(
         "nextLabel" = "Next",
         "prevLabel" = "Back",
         "skipLabel" = "Skip"
-      )
-    )
+      ))
   })
 
   update_command_line <-
@@ -884,7 +984,9 @@ shinyServer(function(input, output, session) {
   get_help_text <- function(opt) {
     id <- paste("bowtie2-options", opt, sep = "-")
     tags <- soup$find(id = id)$parent$find_all("p")
-    sapply(1:length(tags) - 1, function(i) { as.character(tags[i]) })
+    sapply(1:length(tags) - 1, function(i) {
+      as.character(tags[i])
+    })
   }
 
   show_help_text <- function(opts, session) {
@@ -897,10 +999,13 @@ shinyServer(function(input, output, session) {
     # text <- paste(text, collapse = "\n")
 
     observe({
-      insertTab(inputId = "bowtie2tabs",
+      insertTab(
+        inputId = "bowtie2tabs",
         tabPanel("Help", HTML(text)),
         target = "Welcome",
-        select = TRUE, session = session)
+        select = TRUE,
+        session = session
+      )
     })
   }
 

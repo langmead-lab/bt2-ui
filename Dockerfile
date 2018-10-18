@@ -2,7 +2,7 @@ FROM rocker/shiny
 
 RUN apt-get update && apt-get install -y python python-pip virtualenv curl less
 
-RUN Rscript -e "install.packages(c('readr', 'shinyjs', 'rclipboard', 'shinydashboard', 'processx', 'reticulate', 'shinyBS', 'digest', 'rintrojs'), repos='https://cran.rstudio.com/')" \
+RUN Rscript -e "install.packages(c('dplyr', 'readr', 'shinyjs', 'rclipboard', 'shinydashboard', 'processx', 'reticulate', 'shinyBS', 'digest', 'rintrojs'), repos='https://cran.rstudio.com/')" \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 RUN mkdir -p /srv/shiny-server/bt2-ui
