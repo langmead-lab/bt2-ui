@@ -21,7 +21,7 @@ crispr_tab <- fluidRow(column(
       )),
       column(width = 6, numericInput(
         "offset",
-        h5("Select offset"),
+        h5("Interval between k-mers"),
         min = 0,
         value = 0
       ))
