@@ -11,64 +11,90 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 library(parallel)
-library(rintrojs)
 library(markdown)
 library(shinydashboard)
-
-source("bowtie2_ui.R", local = TRUE)
-source("crispr_ui.R", local = TRUE)
-source("tooltips.R")
 
 cores <- detectCores()
 
 customDashboardHeader <-
-  function(...,
-    title = NULL,
-    disable = FALSE,
-    .list = NULL) {
-    items <- c(list(...), .list)
-    custom_css <- NULL
+  function(...) {
+    items <- list(...)
 
     tags$header(
       class = "main-header",
-      custom_css,
-      style = if (disable)
-        "display: none;",
-      span(class = "logo", title),
       tags$nav(
-        class = "navbar navbar-static-top",
+        class = "navbar navbar-default",
         role = "navigation",
-        tags$ul(class = "nav navbar-nav",
-          items)
+        tags$div(class = "navbar-header",
+          tags$button(type="button", class="navbar-toggle", `data-toggle`="collapse", `data-target`="#navbar", `aria-expanded`="true", tags$span(class="icon-bar"), tags$span(class="icon-bar"), tags$span(class="icon-bar")),
+          tags$a(
+            class = "navbar-brand",
+            href = "http://bowtie-bio.sourceforge.net/bowtie2/index.shtml",
+            tags$img(
+              src = "bowtie_logo.png",
+              height = "50px",
+              title = "Bowtie 2"
+            )
+          )
+          ),
+        tags$div(
+          class = "navbar-collapse collapse",
+          id = "navbar",
+          tags$ul(class = "nav navbar-nav",
+            items),
+          tags$ul(class = "nav navbar-nav navbar-right",
+            tags$li(
+              style = "font-size: 20px",
+              tags$a(
+                href = "https://github.com/langmead-lab/bt2-ui",
+                target = "_blank",
+                icon("github"),
+                tags$span()
+              )
+            ),
+            tags$li(
+              a(
+                href = 'http://www.jhu.edu/',
+                img(
+                  src = 'university.small.horizontal.white.png',
+                  title = "Johns Hopkins University",
+                  height = "30px"
+                ),
+                style = "padding-top:10px; padding-bottom:10px;"
+              ),
+              class = "dropdown"
+            )
+            )
+        )
       )
     )
   }
 
 
-# header <- dashboardHeader(
-#   title = tags$a(
-#     href = "http://bowtie-bio.sourceforge.net/bowtie2/index.shtml",
-#     tags$img(
-#       src = "bowtie_logo.png",
-#       height = "40px",
-#       width = "75%",
-#       title = "Bowtie 2"
-#     ),
-#     style = "padding-left:1px;"
-#   ),
-#   tags$li(
-#     a(
-#       href = 'http://www.jhu.edu/',
-#       img(
-#         src = 'university.small.horizontal.white.png',
-#         title = "Johns Hopkins University",
-#         height = "30px"
-#       ),
-#       style = "padding-top:10px; padding-bottom:10px;"
-#     ),
-#     class = "dropdown"
-#   )
-# )
+header <- dashboardHeader(
+  title = tags$a(
+    href = "http://bowtie-bio.sourceforge.net/bowtie2/index.shtml",
+    tags$img(
+      src = "bowtie_logo.png",
+      height = "40px",
+      width = "75%",
+      title = "Bowtie 2"
+    ),
+    style = "padding-left:1px;"
+  ),
+  tags$li(
+    a(
+      href = 'http://www.jhu.edu/',
+      img(
+        src = 'university.small.horizontal.white.png',
+        title = "Johns Hopkins University",
+        height = "30px"
+      ),
+      style = "padding-top:10px; padding-bottom:10px;"
+    ),
+    class = "dropdown"
+  )
+)
 
 sidebar <- dashboardSidebar(collapsed = TRUE,
   sidebarMenu(
@@ -82,10 +108,8 @@ sidebar <- dashboardSidebar(collapsed = TRUE,
 body <- dashboardBody(
   tags$head(tags$script(src = "init.js")),
   includeCSS("www/style.css"),
-  # includeScript("www/script.js"),
   useShinyjs(),
   introjsUI(),
-
   tabItems(
     tabItem("bowtie2", bowtie2_tab),
     tabItem("crispr", crispr_tab),
@@ -98,43 +122,20 @@ body <- dashboardBody(
 )
 
 header <- customDashboardHeader(
-  title = tags$a(
-    href = "http://bowtie-bio.sourceforge.net/bowtie2/index.shtml",
-    tags$img(
-      src = "bowtie_logo.png",
-      height = "40px",
-      width = "75%",
-      title = "Bowtie 2"
-    ),
-    style = "padding-left:1px;"
-  ),
   menuItem("Bowtie 2", tabName = "bowtie2", selected = TRUE),
   menuItem("CRISPR", tabName = "crispr"),
-  menuItem("Manual", tabName = "manual"),
-  tags$li(
-    style = "position: absolute; right: 0px;",
-    a(
-      href = 'http://www.jhu.edu/',
-      img(
-        src = 'university.small.horizontal.white.png',
-        title = "Johns Hopkins University",
-        height = "30px"
-      ),
-      style = "padding-top:10px; padding-bottom:10px;"
-    ),
-    class = "dropdown"
-  ),
-  tags$li(
-    style = "position: absolute; right: 180px; font-size: 20px",
-    tags$a(
-      href = "https://github.com/langmead-lab/bt2-ui",
-      target = "_blank",
-      icon("github"),
-      tags$span()
-    )
-  )
+  menuItem("Manual", tabName = "manual")
 )
+# 
+# customDashboardPage <- function(header, sidebar, body, title) {
+#   addDeps <- getFromNamespace("addDeps", "shinydashboard")
+#   content <- div(class = "wrapper", header, sidebar, body)
+#   addDeps(
+#     tags$body(class = "skin-blue sidebar-collapse",
+#     style = "min-height: 611px;",
+#     shiny::bootstrapPage(content, title = title)))
+# }
 
 function(request) {
-  dashboardPage(header, sidebar, body)
+  dashboardPage(header, sidebar, body, title = "bowtie2 UI")
 }

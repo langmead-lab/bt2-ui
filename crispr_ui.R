@@ -1,3 +1,6 @@
+library(shinydashboard)
+library(shinyBS)
+
 crispr_tab <- fluidRow(column(
   width = 12,
   box(

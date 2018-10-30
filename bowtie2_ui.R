@@ -1,4 +1,8 @@
 library(shiny)
+library(shinyjs)
+library(shinyBS)
+library(rintrojs)
+library(shinydashboard)
 
 bowtie2_tab <- fluidRow(
   column(

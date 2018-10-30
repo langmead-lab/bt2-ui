@@ -21,7 +21,7 @@ library(digest)
 library(shinyBS)
 library(dplyr)
 
-shinyServer(function(input, output, session) {
+function(input, output, session) {
   crispr_sam_tab_exists <- FALSE
   bowtie2_sam_tab_exists <- FALSE
 
@@ -30,6 +30,8 @@ shinyServer(function(input, output, session) {
   source("tooltips.R", local = TRUE)
 
   register_mouseover_events(session)
+  
+  # setBookmarkExclude(setdiff(names(isolate(reactiveValuesToList(input))), c("typeOfQualityValues")))
 
   rclipboardSetup()
   disable("bt2Options")
@@ -918,13 +920,6 @@ shinyServer(function(input, output, session) {
       cmd_line
     }
 
-  observeEvent(input$bookmark, {
-    session$doBookmark()
-    session$onBookmarked(function(url) {
-      updateQueryString(url)
-    })
-  })
-
   output$clip <- renderUI({
     rclipButton("clipbtn",
       "Copy Command",
@@ -1014,4 +1009,4 @@ shinyServer(function(input, output, session) {
       removeTab("bowtie2tabs", "Help", session = session)
     })
   }
-})
+}

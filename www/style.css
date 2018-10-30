@@ -29,3 +29,35 @@ body {
 #font_size_decrease {
     display: block;
 }
+
+.main-header .navbar {
+    -webkit-transition: none !important;
+    -o-transition: none !important;
+    -moz-transition: none !important;
+    transition: none !important;
+    margin-left: 0 !important;
+}
+
+.navbar-brand {
+    padding-top: 0;
+    padding-left: 1px;
+    padding-bottom: 30px;
+    padding-right: 0;
+}
+
+.navbar-default .navbar-toggle {
+    border-color: #337ab7;
+}
+
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+    background-color: #337ab7;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+    background-color: #fff;
+}
+
+.navbar-toggle {
+    margin-top: 2.5px;
+    margin-right: 14px;
+}
