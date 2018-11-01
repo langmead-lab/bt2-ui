@@ -490,6 +490,29 @@ function(input, output, session) {
 
   observeEvent(input$readsAreSequences, {
     cmd_line <- input$bt2Options
+    
+    if (input$readsAreSequences) {
+      shinyjs::hide("inputFileFormat")
+      shinyjs::hide("typeOfQualityValues")
+      
+      if (input$typeOfQualityValues != "--phred33") {
+        cmd_line <- str_replace(cmd_line, input$typeOfQualityValues, "")
+      }
+      if (input$inputFileFormat != "-q") {
+        cmd_line <- str_replace(cmd_line, input$inputFileFormat, "")
+      }
+    } else {
+      shinyjs::show("inputFileFormat")
+      shinyjs::show("typeOfQualityValues")
+      
+      if (input$typeOfQualityValues != "--phred33") {
+        cmd_line <- paste(cmd_line, input$typeOfQualityValues)
+      }
+      if (input$inputFileFormat != "-q") {
+        cmd_line <- paste(cmd_line, input$inputFileFormat)
+      }
+    }
+    
     if (input$paired == "Paired") {
       cmd_line <- str_replace(cmd_line, paste0("-1", "\\s+\\S+"), "")
       cmd_line <-
