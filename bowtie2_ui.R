@@ -12,7 +12,7 @@ bowtie2_tab <- fluidRow(
       solidHeader = TRUE,
       fluidRow(
         column(
-          width = 3,
+          width = 4,
           introBox(
             selectizeInput(
               "index",
@@ -25,7 +25,7 @@ bowtie2_tab <- fluidRow(
           )
         ),
         column(
-          width = 9,
+          width = 8,
           conditionalPanel(
             condition = "input.readsAreSequences && input.paired == 'Paired'",
             textAreaInput(
@@ -43,7 +43,7 @@ bowtie2_tab <- fluidRow(
           )
         ),
         column(
-          width = 9,
+          width = 8,
           conditionalPanel(
             condition = "!input.readsAreSequences && input.paired == 'Paired'",
             introBox(
@@ -66,7 +66,7 @@ bowtie2_tab <- fluidRow(
         ),
         conditionalPanel(condition = "input.readsAreSequences && input.paired == 'Unpaired'",
           column(
-            width = 9,
+            width = 8,
             textAreaInput(
               "unpaired_sequence",
               label = NULL,
@@ -76,7 +76,7 @@ bowtie2_tab <- fluidRow(
           )),
         conditionalPanel(condition = "!input.readsAreSequences && input.paired == 'Unpaired'",
           column(
-            width = 9,
+            width = 8,
             fileInput(
               "unpaired",
               label = NULL,

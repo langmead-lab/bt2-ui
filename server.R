@@ -985,6 +985,10 @@ function(input, output, session) {
   }
 
   show_help_text <- function(opts, session) {
+    if (isolate(session$input$width[[1]]) < 768) {
+      return(NULL)
+    }
+    
     text <- ""
     sapply(opts, function(opt) {
       t <- paste(get_help_text(opt), collapse = "\n")
@@ -1005,6 +1009,10 @@ function(input, output, session) {
   }
 
   remove_help_text <- function(session) {
+    if (isolate(session$input$width[[1]]) < 768) {
+      return(NULL)
+    }
+    
     observe({
       removeTab("bowtie2tabs", "Help", session = session)
     })
