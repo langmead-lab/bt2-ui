@@ -1,5 +1,5 @@
 library(shinydashboard)
-library(shinyBS)
+library(shinyjs)
 
 crispr_tab <- fluidRow(column(
   width = 12,
@@ -19,8 +19,8 @@ crispr_tab <- fluidRow(column(
       column(width = 6, numericInput(
         "kmer",
         h5("Select kmer size"),
-        min = 0,
-        value = 0
+        min = 1,
+        value = 20
       )),
       column(width = 6, numericInput(
         "offset",
@@ -56,23 +56,26 @@ crispr_tab <- fluidRow(column(
     tabsetPanel(id = "crisprtabs",
       tabPanel(
         "Welcome",
-        h4("Welcome to the CRISPR!")
+        h4("Welcome to the CRISPR!"),
+        p("To get started:", tags$li("Pick a reference genome"),
+          tags$li("paste a \"target\" sequence into the box above; we will be examining the k-mers making up this sequence and how they align to the genome"),
+          tags$li("choose a k-mer size and interval"))
       )),
     absolutePanel(
-      id = "crisprcontrols",
+      id = "crisprpanel",
       top = 0,
       right = 0,
-      div(
+      hidden(div(
+        id = "crisprcontrols",
         style = "padding: 10px;",
-        div(style="display: inline-block;vertical-align:top; width: 300px;", selectizeInput("kmer_filter", label = NULL,  choices = NULL, options = list(placeholder = "Filter by kmer"))),
+        div(style="display: inline-block;vertical-align:top; width: 300px;", selectizeInput("kmer_filter", label = NULL,  choices = NULL, options = list(placeholder = "Filter by kmer", onInitialize = I('function() { this.setValue(""); }')))),
         downloadButton("crisprDownloadSAM", "Download"),
-        actionButton("crisprCopy", "Copy", icon = icon("copy")),
         actionButton(
           "crisprToggleHighlight",
           "Toggle Highlight",
           icon = icon("palette")
         )
       )
-    )),
+    ))),
   bsAlert("alert")
 ))
