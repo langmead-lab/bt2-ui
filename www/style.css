@@ -2,11 +2,32 @@ body {
     font-family: Helvetica;
 }
 
-.skin-blue .main-header .logo {
-    background-color: #3c8dbc;
+.skin-blue .main-header .navbar {
+    background-color: #112735;
 }
+
+.skin-blue .main-header .navbar .nav>li>a:hover {
+    background-color: #0a171f !important;
+}
+
+.skin-blue .main-header .navbar .nav>.active>a {
+    background-color:  !important;
+}
+
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+    background-color: #0a171f !important;
+}
+
+.navbar-default .navbar-toggle {
+    border-color: #0a171f !important;
+}
+
+.skin-blue .main-header .logo {
+    background-color: #0a171f !important;
+}
+
 .skin-blue .main-header .logo:hover {
-    background-color: #3c8dbc;
+    background-color: #0a171f !important;
 }
 
 #bt2Options { 

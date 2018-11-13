@@ -86,7 +86,7 @@ bowtie2_tab <- fluidRow(
           ))
       ),
       introBox(
-        a(id = "toggleCommand", "Show/hide command"),
+        a(id = "toggleCommand", "Show command"),
         data.step  = 8,
         data.intro = "Click this link to view the command that will be sent to the Bowtie 2 process"
       ),
@@ -96,11 +96,9 @@ bowtie2_tab <- fluidRow(
           inputId = "bt2Options",
           label = NULL,
           resize = "vertical"
-        ),
-        tags$p(uiOutput("clip"))
+        )
       )),
-      fluidRow(column(
-        width = 6,
+      fluidRow(column(12,
         div(
           style = "display:inline-block",
           introBox(
@@ -116,11 +114,7 @@ bowtie2_tab <- fluidRow(
         ),
         div(
           style = "display:inline-block",
-          introBox(
-            bookmarkButton("Bookmark Settings"),
-            data.step = 10,
-            data.intro = "Save the state of the UI with the Bookmark button."
-          )
+          hidden(uiOutput("clip"))
         )
       ))
       # div(style = "display: inline-block;",
@@ -149,7 +143,7 @@ bowtie2_tab <- fluidRow(
         id = "bowtie2controls",
         top = 0,
         right = 0,
-        div(
+        hidden(div(
           style = "padding: 10px;",
           downloadButton("bt2DownloadSAM", "Download"),
           actionButton("bt2CopySam", "Copy", icon = icon("copy")),
@@ -159,7 +153,7 @@ bowtie2_tab <- fluidRow(
             icon = icon("palette")
           )
         )
-      )),
+      ))),
     bsAlert("alert")
   ),
   column(
@@ -174,7 +168,7 @@ bowtie2_tab <- fluidRow(
         collapsible = TRUE,
         # -c
         introBox(
-          checkboxInput("readsAreSequences", label = "Reads are sequences, not files", value = TRUE),
+          checkboxInput("readsAreSequences", label = "Reads are sequences, not files"),
           data.step = 3,
           data.intro = "You can toggle between sequences or files by clicking on this button."
         ),

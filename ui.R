@@ -12,6 +12,7 @@ library(shinyjs)
 library(shinyBS)
 library(parallel)
 library(markdown)
+library(rclipboard)
 library(shinydashboard)
 
 cores <- detectCores()
@@ -44,12 +45,40 @@ customDashboardHeader <-
             items),
           tags$ul(class = "nav navbar-nav navbar-right",
             tags$li(
+              class = "dropdown",
               style = "font-size: 20px",
               tags$a(
-                href = "https://github.com/langmead-lab/bt2-ui",
-                target = "_blank",
+                `data-value` =" More",
+                `aria-expanded` = "false",
+                `data-toggle` = "dropdown",
+                class = "dropdown-toggle",
+                href = "#",
                 icon("github"),
-                tags$span()
+                tags$b(class = "caret")
+              ),
+              tags$ul(
+                class = "dropdown-menu",
+                tags$li(
+                  tags$a(
+                    href = "https://github.com/langmead-lab/bt2-ui/issues",
+                    target = "_blank",
+                    "UI repo"
+                  )
+                ),
+                tags$li(
+                  tags$a(
+                    href = "https://github.com/langmead-lab/bt2-ui/issues",
+                    target = "_blank",
+                    "UI issues"
+                  )
+                ),
+                tags$li(
+                  tags$a(
+                    href = "https://github.com/BenLangmead/bowtie2",
+                    target = "_blank",
+                    "Bowtie2 repo"
+                  )
+                )
               )
             ),
             tags$li(
@@ -106,6 +135,7 @@ sidebar <- dashboardSidebar(collapsed = TRUE,
 
 
 body <- dashboardBody(
+  rclipboardSetup(),
   tags$head(tags$script(src = "init.js")),
   includeCSS("www/style.css"),
   useShinyjs(),
@@ -137,5 +167,6 @@ header <- customDashboardHeader(
 # }
 
 function(request) {
+  
   dashboardPage(header, sidebar, body, title = "bowtie2 UI")
 }

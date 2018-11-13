@@ -33,15 +33,33 @@ function(input, output, session) {
   
   # setBookmarkExclude(setdiff(names(isolate(reactiveValuesToList(input))), c("typeOfQualityValues")))
 
-  rclipboardSetup()
   disable("bt2Options")
-  onclick("toggleCommand", toggle(id = "cmd_line", anim = TRUE))
-
+  
+  output$clip <- renderUI({
+    rclipButton("clipbtn",
+      "Copy Command",
+      input$bt2Options,
+      icon("clipboard"))
+  })
+  
+  clicks <- 0
+  onclick("toggleCommand", function() {
+    toggle(id = "cmd_line", anim = TRUE)
+    if (clicks %% 2 == 0) {
+      shinyjs::html("toggleCommand", "Hide command")
+      shinyjs::show("clip", anim = TRUE, animType = "fade", time = 0.25)
+    } else {
+      shinyjs::html("toggleCommand", "Show command")
+      shinyjs::hide("clip", anim = TRUE, animType = "fade", time = 0.25)
+    }
+    clicks <<- clicks + 1
+  }, TRUE)
+  
   shinyjs::runjs("$('#mate1_sequence').attr('maxlength', 500)")
   shinyjs::runjs("$('#mate2_sequence').attr('maxlength', 500)")
   shinyjs::runjs("$('#unpaired_sequence').attr('maxlength', 500)")
 
-  updateCheckboxInput(session, "readsAreSequences", value = FALSE)
+  # updateCheckboxInput(session, "readsAreSequences", value = FALSE)
 
   # observeEvent(input$tabs, {
   #   addClass(selector = "body", class = "sidebar-collapse")
@@ -219,6 +237,7 @@ function(input, output, session) {
       c("-q", "-f", "--tab5", "--tab6", "--qseq", "-r", "-F")
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$inputFileFormat)
+    
     update_command_line(
       session,
       input$inputFileFormat,
@@ -373,7 +392,7 @@ function(input, output, session) {
         mutually_exclusive_options = "-U"
       )
     }
-  })
+  }, ignoreInit = TRUE)
 
   observeEvent(c(input$mate2, input$mate2_sequence), {
     if (input$readsAreSequences) {
@@ -393,7 +412,7 @@ function(input, output, session) {
         mutually_exclusive_options = "-U"
       )
     }
-  })
+  }, ignoreInit = TRUE)
 
   observeEvent(c(input$unpaired, input$unpaired_sequence), {
     if (input$readsAreSequences) {
@@ -413,7 +432,7 @@ function(input, output, session) {
         mutually_exclusive_options = c("-1", "-2")
       )
     }
-  })
+  }, ignoreInit = TRUE)
 
   observeEvent(input$paired, {
     cmd_line <- input$bt2Options
@@ -942,13 +961,6 @@ function(input, output, session) {
 
       cmd_line
     }
-
-  output$clip <- renderUI({
-    rclipButton("clipbtn",
-      "Copy Command",
-      input$bt2Options,
-      icon("clipboard"))
-  })
 
   submit_bowtie2_query <-
     function(query,
