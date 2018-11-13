@@ -673,6 +673,9 @@ function(input, output, session) {
 
   #### CRISPR
   observeEvent(input$crisprSubmit, {
+    shinyjs::disable("crisprSubmit")
+    on.exit(shinyjs::enable("crisprSubmit"))
+    
     if (input$crisprInput == "sequence") {
       data <- paste(">r1", input$crisprSequence, sep = "\n")
       hash <- digest(data, algo = "sha256")
@@ -685,6 +688,10 @@ function(input, output, session) {
     } else {
       filepath <- input$crisprFile$datapath
     }
+    progress <- shiny::Progress$new(style = "notification")
+    progress$set(message = "Running Bowtie query", value = 0)
+    on.exit(progress$close(), add = TRUE)
+    
     query <-
       paste("-x",
         input$index2,
@@ -711,10 +718,12 @@ function(input, output, session) {
         append = FALSE,
         style = "error"
       )
-
+      
       updateTabsetPanel(session, "crisprtabs", selected = "Welcome")
       return(NULL)
     }
+    
+    progress$set(value = 0.40, message = "Highlighting output")
 
     rvs$crispr_sam <- out$stdout
 
@@ -729,12 +738,14 @@ function(input, output, session) {
       crispr_sam_tab_exists <<- TRUE
     }
 
+    progress$set(value = 0.50, message = "Rendering k-mer diagram")
+    
     fig <- kmer_diagram(rvs$crispr_sam)
     updateSelectizeInput(
       session,
       "kmer_filter",
-      choices = crispr_data[[2]],
-      selected = NULL,
+      choices = c("", crispr_data[[2]]),
+      selected = "",
       server = TRUE
     )
 
@@ -758,6 +769,8 @@ function(input, output, session) {
         )
       )
     })
+    
+    progress$set(value = 1, message = "Done")
   })
 
   observeEvent(rvs$crispr_sam, {
@@ -804,12 +817,24 @@ function(input, output, session) {
     }
   )
 
-  output$crisprCopy <- renderUI({
-    rclipButton("crisprClipBtn",
-      "Copy Command",
-      rvs$crispr_sam,
-      icon("clipboard"))
-  })
+  # output$crisprSAMCopy <- renderUI({
+  #   out <- rvs$crispr_sam
+  #   
+  #   if (input$kmer_filter != "") {
+  #     pat <-
+  #       paste(input$kmer_filter,
+  #         reverse_complement(input$kmer_filter),
+  #         sep = "|")
+  #     out <- str_split(rvs$crispr_sam, "\n") %>% {
+  #       str_subset(.[[1]], pat)
+  #     } %>% str_flatten(collapse = "\n")
+  #   }
+  #     
+  #   rclipButton("crisprClipBtn",
+  #     "Copy",
+  #     out,
+  #     icon("clipboard"))
+  # })
 
   observeEvent(input$crisprtabs, {
     if (input$crisprtabs != "SAM Output") {
