@@ -21,7 +21,7 @@ bowtie2_tab <- fluidRow(
               choices = NULL
             ),
             data.step = 1,
-            data.intro = "To get started select from one of several pre-build indexes"
+            data.intro = "Select a pre-built genome index"
           )
         ),
         column(
@@ -60,7 +60,7 @@ bowtie2_tab <- fluidRow(
                 multiple = FALSE
               ),
               data.step = 2,
-              data.intro = "Then provide your reads as either a file or sequence"
+              data.intro = "Provide reads, either as sequences or as files."
             )
           )
         ),
@@ -88,7 +88,7 @@ bowtie2_tab <- fluidRow(
       introBox(
         a(id = "toggleCommand", "Show command"),
         data.step  = 8,
-        data.intro = "Click this link to view the command that will be sent to the Bowtie 2 process"
+        data.intro = "Click here to view the command that will be used to run Bowtie 2"
       ),
       hidden(div(
         id = "cmd_line",
@@ -140,13 +140,13 @@ bowtie2_tab <- fluidRow(
           bsButton("tutorial", label = "Get Started", style = "success")
         )
       ), absolutePanel(
-        id = "bowtie2controls",
+        id = "bowtie2panel",
         top = 0,
         right = 0,
         hidden(div(
+          id = "bowtie2controls",
           style = "padding: 10px;",
           downloadButton("bt2DownloadSAM", "Download"),
-          actionButton("bt2CopySam", "Copy", icon = icon("copy")),
           actionButton(
             "bt2ToggleHighlight",
             "Toggle Highlight",
@@ -170,7 +170,7 @@ bowtie2_tab <- fluidRow(
         introBox(
           checkboxInput("readsAreSequences", label = "Reads are sequences, not files"),
           data.step = 3,
-          data.intro = "You can toggle between sequences or files by clicking on this button."
+          data.intro = "Check this if you entered the sequences themselves rather than file names"
         ),
         selectInput(
           "inputFileFormat",
@@ -229,7 +229,7 @@ bowtie2_tab <- fluidRow(
         )
       ),
       data.step = 4,
-      data.intro = "The Input options allow you to specify how Bowtie 2 processes your reads "
+      data.intro = "Configure how your reads are formatted"
     ),
 
 
@@ -316,7 +316,7 @@ bowtie2_tab <- fluidRow(
         checkboxInput("no1MmUpfront", label = "Do not allow 1 mismatch alignments before attempting to scan for the optimal seeded alignments")
       ),
       data.step = 5,
-      data.intro = "Alignment options control how Bowtie 2 aligns reads to the reference genome."
+      data.intro = "Configure the alignment algorithm"
     ),
 
     # Scoring options
@@ -367,7 +367,7 @@ bowtie2_tab <- fluidRow(
         )
       ),
       data.step = 6,
-      data.intro = "Scoring options affect the way Bowtie 2 assess the alignment"
+      data.intro = "Configure the scoring function"
     ),
 
     # Reporting
@@ -459,7 +459,7 @@ bowtie2_tab <- fluidRow(
         )
       ),
       data.step = 7,
-      data.intro = "Output options control the SAM output produced by Bowtie 2"
+      data.intro = "Configure SAM output"
     )
   )
 )
