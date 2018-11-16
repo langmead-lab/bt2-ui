@@ -923,12 +923,82 @@ function(input, output, session) {
   }
 
   observeEvent(input$tutorial, {
-    introjs(session,
+    id <- if (input$paired == "Unpaired") {
+      if (input$readsAreSequences) {
+        "#unpairedInputSequence"
+      } else {
+        "#unpairedInputFIle"
+      }
+    } else {
+      if (input$readsAreSequences) {
+        "#pairedInputSequence"
+      } else {
+        "#pairedInputFile"
+      }
+    }
+    introjs(
+      session,
       options = list(
         "nextLabel" = "Next",
         "prevLabel" = "Back",
-        "skipLabel" = "Skip"
-      ))
+        "skipLabel" = "Skip",
+        steps = data.frame(
+          element = c(
+            "#indexSelect",
+            id,
+            "#readsAreSequences",
+            "#formatOptions",
+            "#alnAlgOptions",
+            "#scoringFuncOptions",
+            "#outputOptions",
+            "#toggleCommand",
+            "#submit"
+          ),
+          intro = c(
+            "Select a pre-built genome index",
+            "Provide reads, either as sequences or as files.",
+            "Check this if you entered the sequences themselves rather than file names",
+            "Configure how your reads are formatted",
+            "Configure the alignment algorithm",
+            "Configure the scoring function",
+            "Configure SAM output",
+            "Click here to view the command that will be used to run Bowtie 2",
+            "Click this button to submit your command"
+          )
+        )
+      )
+    )
+  })
+  
+  observeEvent(input$crisprtutorial, {
+    updateSelectizeInput(session, "index2", selected = "e_coli")
+    updateTextAreaInput(session, "crisprSequence", value = "GCCGGGCGCTGGTTATGGTCAGTTCGAGCATAAGGCTGAC")
+    click("crisprSubmit")
+    
+    introjs(
+      session,
+      options = list(
+        "nextLabel" = "Next",
+        "prevLabel" = "Back",
+        "skipLabel" = "Skip",
+        steps = data.frame(
+          element = c(
+            "#selectCrisprIndex",
+            "#crisprSequence",
+            "#fastaContinuousOptions",
+            "#kmer_alignments",
+            "#kmerFilterWidget"
+          ),
+          intro = c(
+            "Select a pre-built genome index",
+            "Specify \"target\" sequence; Bowtie 2 will align substrings of this sequence.",
+            "Specify k-mer length k and interval i.  Bowtie 2 will align every ith k-mer from the target sequence.  Interval of 1 means all k-mers, interval of 2 means every other k-mer, etc.",
+            "View the k-mers that were aligned and the number of times they aligned to the reference.  Hover over the numbers to highlight the k-mer and click to focus on its alignments.",
+            "View SAM alignments for all k-mers (default) or a specific k-mer (after clicking on one)"
+          )
+        )
+      )
+    )
   })
 
   update_command_line <-

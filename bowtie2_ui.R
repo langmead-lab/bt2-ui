@@ -1,7 +1,6 @@
 library(shiny)
 library(shinyjs)
 library(shinyBS)
-library(rintrojs)
 library(shinydashboard)
 
 bowtie2_tab <- fluidRow(
@@ -13,32 +12,32 @@ bowtie2_tab <- fluidRow(
       fluidRow(
         column(
           width = 4,
-          introBox(
+          div(id = "indexSelect",
             selectizeInput(
               "index",
               label = NULL,
               options = list(placeholder = "Select Index"),
               choices = NULL
-            ),
-            data.step = 1,
-            data.intro = "Select a pre-built genome index"
-          )
+            ))
         ),
         column(
           width = 8,
           conditionalPanel(
             condition = "input.readsAreSequences && input.paired == 'Paired'",
-            textAreaInput(
-              "mate1_sequence",
-              label = NULL,
-              placeholder = "Enter mate 1 sequence",
-              resize = "vertical"
-            ),
-            textAreaInput(
-              "mate2_sequence",
-              label = NULL,
-              placeholder = "Enter mate 2 sequence",
-              resize = "vertical"
+            div(
+              id = "pairedInputSequence",
+              textAreaInput(
+                "mate1_sequence",
+                label = NULL,
+                placeholder = "Enter mate 1 sequence",
+                resize = "vertical"
+              ),
+              textAreaInput(
+                "mate2_sequence",
+                label = NULL,
+                placeholder = "Enter mate 2 sequence",
+                resize = "vertical"
+              )
             )
           )
         ),
@@ -46,7 +45,7 @@ bowtie2_tab <- fluidRow(
           width = 8,
           conditionalPanel(
             condition = "!input.readsAreSequences && input.paired == 'Paired'",
-            introBox(
+            div(id = "pairedInputFile",
               fileInput(
                 "mate1",
                 label = NULL,
@@ -58,38 +57,38 @@ bowtie2_tab <- fluidRow(
                 label = NULL,
                 placeholder = "Select reads for mate 2",
                 multiple = FALSE
-              ),
-              data.step = 2,
-              data.intro = "Provide reads, either as sequences or as files."
+              )
             )
           )
         ),
         conditionalPanel(condition = "input.readsAreSequences && input.paired == 'Unpaired'",
           column(
             width = 8,
-            textAreaInput(
-              "unpaired_sequence",
-              label = NULL,
-              placeholder = "Enter sequence",
-              resize = "horizontal"
+            div(
+              id = "unpairedInputSequence",
+              textAreaInput(
+                "unpaired_sequence",
+                label = NULL,
+                placeholder = "Enter sequence",
+                resize = "horizontal"
+              )
             )
           )),
         conditionalPanel(condition = "!input.readsAreSequences && input.paired == 'Unpaired'",
           column(
             width = 8,
-            fileInput(
-              "unpaired",
-              label = NULL,
-              placeholder = "Select unpaired reads",
-              multiple = FALSE
+            div(
+              id = "unpairedInputFile",
+              fileInput(
+                "unpaired",
+                label = NULL,
+                placeholder = "Select unpaired reads",
+                multiple = FALSE
+              )
             )
           ))
       ),
-      introBox(
-        a(id = "toggleCommand", "Show command"),
-        data.step  = 8,
-        data.intro = "Click here to view the command that will be used to run Bowtie 2"
-      ),
+      a(id = "toggleCommand", "Show command"),
       hidden(div(
         id = "cmd_line",
         textAreaInput(
@@ -101,16 +100,10 @@ bowtie2_tab <- fluidRow(
       fluidRow(column(12,
         div(
           style = "display:inline-block",
-          introBox(
-            bsButton(
-              "submit",
-              "Submit Query",
-              style = "primary",
-              icon = icon("play")
-            ),
-            data.step = 9,
-            data.intro = "Click this button to submit your command"
-          )
+          bsButton("submit",
+            "Submit Query",
+            style = "primary",
+            icon = icon("play"))
         ),
         div(
           style = "display:inline-block",
@@ -126,6 +119,15 @@ bowtie2_tab <- fluidRow(
         tabPanel(
           "Welcome",
           h4("Welcome to the Bowtie 2 UI!"),
+          p(
+            "This is our first attempt at a web interface for the Bowtie family
+            of aligners.  Is this useful to you?  Do you see the reference
+            genomes that are important to you?  Is the so-called \"CRISPR\" app
+            useful to you?  Would other apps be useful?  We are eager for
+            feedback.  Please click the GitHub icon toward the upper-right to
+            go to the repo and request features and report feedback and issues."
+          ),
+          h5("What is Bowtie2?"),
           p(
             tags$b("Bowtie 2"),
             "is an ultrafast, memory-efficient short read aligner.
@@ -160,18 +162,14 @@ bowtie2_tab <- fluidRow(
     width = 3,
 
     # Input options
-    introBox(
+    div(id = "formatOptions",
       box(
         width = NULL,
         title = "Input",
         status = "warning",
         collapsible = TRUE,
         # -c
-        introBox(
-          checkboxInput("readsAreSequences", label = "Reads are sequences, not files"),
-          data.step = 3,
-          data.intro = "Check this if you entered the sequences themselves rather than file names"
-        ),
+        checkboxInput("readsAreSequences", label = "Reads are sequences, not files"),
         selectInput(
           "inputFileFormat",
           label = h5("Input File Format"),
@@ -227,14 +225,12 @@ bowtie2_tab <- fluidRow(
           value = 0,
           min = 0
         )
-      ),
-      data.step = 4,
-      data.intro = "Configure how your reads are formatted"
+      )
     ),
 
 
     # Alignment options
-    introBox(
+    div(id = "alnAlgOptions",
       box(
         width = NULL,
         title = "Alignment",
@@ -314,13 +310,11 @@ bowtie2_tab <- fluidRow(
         checkboxInput("noFw", label = "Do not align forward (original) version of read"),
         checkboxInput("noRc", label = "Do not align reverse-compliment version of read"),
         checkboxInput("no1MmUpfront", label = "Do not allow 1 mismatch alignments before attempting to scan for the optimal seeded alignments")
-      ),
-      data.step = 5,
-      data.intro = "Configure the alignment algorithm"
+      )
     ),
 
     # Scoring options
-    introBox(
+    div(id = "scoringFuncOptions",
       box(
         width = NULL,
         title = "Scoring",
@@ -365,9 +359,7 @@ bowtie2_tab <- fluidRow(
           label = h5("Penalty for non-A/C/G/Ts in read/reference"),
           value = 1
         )
-      ),
-      data.step = 6,
-      data.intro = "Configure the scoring function"
+      )
     ),
 
     # Reporting
@@ -435,7 +427,7 @@ bowtie2_tab <- fluidRow(
     ),
 
     # Output options
-    introBox(
+    div(id = "outputOptions",
       box(
         width = NULL,
         title = "Output",
@@ -457,9 +449,7 @@ bowtie2_tab <- fluidRow(
           "softClippedUnmappedTlen",
           "Exclude soft-clipped bases when reporting TLEN"
         )
-      ),
-      data.step = 7,
-      data.intro = "Configure SAM output"
+      )
     )
   )
 )
