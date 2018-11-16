@@ -750,24 +750,25 @@ function(input, output, session) {
     )
 
     output$kmer_alignments <- renderUI({
-      box(
-        width = NULL,
-        tags$p(
-          id = "kmer_diagram",
-          style = "font-family: monospace;",
-          span(id = "sequence_", input$crisprSequence),
-          tags$br(),
-          HTML(fig),
-          absolutePanel(
-            style = "padding: 5px;",
-            actionButton("font_size_increase", NULL, icon = icon("plus")),
-            actionButton("font_size_decrease", NULL, icon = icon("minus")),
-            bottom = 0,
-            right = 0
-          ),
-          tags$script(src = "script.js")
-        )
-      )
+      div(id = "kmerDiagram",
+        box(
+          width = NULL,
+          tags$p(
+            id = "kmer_diagram",
+            style = "font-family: monospace;",
+            span(id = "sequence_", input$crisprSequence),
+            tags$br(),
+            HTML(fig),
+            absolutePanel(
+              style = "padding: 5px;",
+              actionButton("font_size_increase", NULL, icon = icon("plus")),
+              actionButton("font_size_decrease", NULL, icon = icon("minus")),
+              bottom = 0,
+              right = 0
+            ),
+            tags$script(src = "script.js")
+          )
+        ))
     })
     
     progress$set(value = 1, message = "Done")
@@ -862,7 +863,6 @@ function(input, output, session) {
 
   format_kmers <- function(data, sequence, kmer_length) {
     field_widths <- str_locate(sequence, data[[2]])[, 2]
-    warning(field_widths)
     padded_kmer_counts <-
       str_pad(data[[3]],
         width = kmer_length,
@@ -971,12 +971,29 @@ function(input, output, session) {
   })
   
   observeEvent(input$crisprtutorial, {
+    oldIndex <- input$index2
+    oldSequence <- input$crisprSequence
+    oldKmer <- input$kmer
+    oldOffset <- input$offset
+    
+    update_funcs <- c(
+      sprintf("Shiny.setInputValue('showModal', %d)", input$crisprtutorial),
+      sprintf("Shiny.setInputValue('index2', '%s')", oldIndex),
+      sprintf("Shiny.setInputValue('crisprSequence', '%s')", oldSequence),
+      sprintf("Shiny.setInputValue('kmer', %d)", oldKmer),
+      sprintf("Shiny.setInputValue('offset', %d)", oldOffset)
+    )
+    
+    updateNumericInput(session, "kmer", value = 20)
+    updateNumericInput(session, "offset", value = 1)
     updateSelectizeInput(session, "index2", selected = "e_coli")
     updateTextAreaInput(session, "crisprSequence", value = "GCCGGGCGCTGGTTATGGTCAGTTCGAGCATAAGGCTGAC")
-    click("crisprSubmit")
+    delay(100, click("crisprSubmit"))
     
     introjs(
       session,
+      events = list("onexit" = I(paste0(update_funcs, collapse = ";"))),
+      # events = list("oncomplete" = I('Shiny.setInputValue("kmer", "12");')),
       options = list(
         "nextLabel" = "Next",
         "prevLabel" = "Back",
@@ -999,6 +1016,30 @@ function(input, output, session) {
         )
       )
     )
+  })
+  
+  observeEvent(input$showModal, {
+    showModal(
+      modalDialog(
+        title = NULL,
+        size = "s",
+        "Do you want to restore the state of the UI",
+        easyClose = TRUE,
+        footer = tagList(actionButton("restore", "Yes"),
+          modalButton("No"))
+      )
+    )
+  })
+  observeEvent(input$restore, {
+    removeModal()
+    updateNumericInput(session, "kmer", value = input$kmer)
+    updateNumericInput(session, "offset", value = input$offset)
+    updateTextAreaInput(session, "crisprSequence", value = input$crisprSequence)
+    updateSelectizeInput(session, "index2", selected = input$index2)
+    output$kmer_alignments <- renderUI({
+    })
+    removeTab("crisprtabs", "SAM Output")
+    crispr_sam_tab_exists <<- FALSE
   })
 
   update_command_line <-
