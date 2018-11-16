@@ -77,18 +77,8 @@ crispr_tab <- fluidRow(column(
           toward the upper-right to go to the repo and request features and
           report feedback and issues."
         ),
-        p(
-          "To get started:",
-          tags$li("Pick a reference genome"),
-          tags$li(
-            "paste a \"target\" sequence into the box above; we will be examining
-            the k-mers making up this sequence and how they align to the genome"
-          ),
-          tags$li("choose a k-mer size and interval"),
-          p("Click the tutorial button below to get started"),
-          
-          bsButton("crisprtutorial", label = "Get Started", style = "success")
-        )
+        p("Click the tutorial button below to get started"),
+        bsButton("crisprtutorial", label = "Get Started", style = "success")
       )),
     absolutePanel(
       id = "crisprpanel",

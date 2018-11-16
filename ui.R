@@ -61,7 +61,7 @@ customDashboardHeader <-
                 class = "dropdown-menu",
                 tags$li(
                   tags$a(
-                    href = "https://github.com/langmead-lab/bt2-ui/issues",
+                    href = "https://github.com/langmead-lab/bt2-ui",
                     target = "_blank",
                     "UI repo"
                   )
