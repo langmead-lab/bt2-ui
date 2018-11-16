@@ -986,7 +986,7 @@ function(input, output, session) {
     
     updateNumericInput(session, "kmer", value = 20)
     updateNumericInput(session, "offset", value = 1)
-    updateSelectizeInput(session, "index2", selected = "e_coli")
+    updateSelectizeInput(session, "index2", selected = "C_elegans_WS195")
     updateTextAreaInput(session, "crisprSequence", value = "GCCGGGCGCTGGTTATGGTCAGTTCGAGCATAAGGCTGAC")
     delay(100, click("crisprSubmit"))
     
