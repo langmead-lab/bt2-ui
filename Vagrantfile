@@ -30,12 +30,12 @@ Vagrant.configure("2") do |config|
         aws.associate_public_ip = true
         aws.keypair_name = KEYPAIR
         if REGION == "us-east-1"
-            aws.ami = "ami-0ff8a91507f77f867"
+            aws.ami = "ami-13401669"
             aws.subnet_id = "subnet-1fc8de7a"
             aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
         end
         if REGION == "us-east-2"
-            aws.ami = "ami-0b59bfac6be064b78"
+            aws.ami = "ami-901338f5"
             if ACCOUNT == "default"
                 aws.subnet_id = "subnet-09923c0ca7212a423"
                 aws.security_groups = ["sg-051ff8479e318f0ab"]  # allows just 22
