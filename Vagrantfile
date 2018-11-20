@@ -9,7 +9,11 @@
 # Note: the standard vagrant-aws plugin does not have spot support
 
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
-REGION = "us-east-1"
+REGION = "us-east-2"
+INSTANCE_TYPE = "c4.xlarge"
+BID_PRICE = "0.06"
+ACCOUNT = "jhu-langmead"
+KEYPAIR = "bt2-ui-us-east-2"
 PUBLIC_IP = "18.211.104.174"
 
 Vagrant.configure("2") do |config|
@@ -18,14 +22,28 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     config.vm.provider :aws do |aws, override|
+        aws.aws_dir = ENV['HOME'] + "/.aws/"
+        aws.aws_profile = ACCOUNT
         aws.region = REGION
-        aws.ami = "ami-13401669"
         aws.tags = { 'Application' => 'bt2-ui' }
-        aws.instance_type = "r4.xlarge"
-        aws.keypair_name = "bt2-ui"
-        aws.subnet_id = "subnet-1fc8de7a"
-        aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
+        aws.instance_type = INSTANCE_TYPE
         aws.associate_public_ip = true
+        aws.keypair_name = KEYPAIR
+        if REGION == "us-east-1"
+            aws.ami = "ami-0ff8a91507f77f867"
+            aws.subnet_id = "subnet-1fc8de7a"
+            aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
+        end
+        if REGION == "us-east-2"
+            aws.ami = "ami-0b59bfac6be064b78"
+            if ACCOUNT == "default"
+                aws.subnet_id = "subnet-09923c0ca7212a423"
+                aws.security_groups = ["sg-051ff8479e318f0ab"]  # allows just 22
+            else
+                aws.subnet_id = "subnet-03dc5fea763057c7d"
+                aws.security_groups = ["sg-0a01b0edfa261cb34"]  # allows just 22
+            end
+        end
         aws.elastic_ip = PUBLIC_IP
         aws.block_device_mapping = [{
             'DeviceName' => "/dev/sdf",
@@ -35,10 +53,10 @@ Vagrant.configure("2") do |config|
             'Ebs.VolumeType' => 'gp2'
         }]
         override.ssh.username = "ec2-user"
-        override.ssh.private_key_path = "~/.aws/bt2-ui.pem"
+        override.ssh.private_key_path = "~/.aws/" + KEYPAIR + ".pem"
         aws.region_config REGION do |region|
             region.spot_instance = true
-            region.spot_max_price = "0.08"
+            region.spot_max_price = BID_PRICE
         end
     end
 
