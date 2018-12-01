@@ -376,6 +376,9 @@ function(input, output, session) {
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
     if (input$readsAreSequences) {
+      validate(
+        need(str_detect(input$mate1_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      )
       update_command_line(
         session,
         "-1",
@@ -396,6 +399,9 @@ function(input, output, session) {
 
   observeEvent(c(input$mate2, input$mate2_sequence), {
     if (input$readsAreSequences) {
+      validate(
+        need(str_detect(input$mate2_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      )
       update_command_line(
         session,
         "-2",
@@ -416,6 +422,9 @@ function(input, output, session) {
 
   observeEvent(c(input$unpaired, input$unpaired_sequence), {
     if (input$readsAreSequences) {
+      validate(
+        need(str_detect(input$unpaired_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      )
       update_command_line(
         session,
         "-U",
@@ -444,7 +453,7 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, "-1", input$mate1$name)
       }
 
-      if (!is.null(input$mate1_sequence) &&
+      if (input$mate1_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-1", input$mate1_sequence)
       }
@@ -454,7 +463,7 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, "-2", input$mate2$name)
       }
 
-      if (!is.null(input$mate2_sequence) &&
+      if (input$mate2_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-2", input$mate2_sequence)
       }
@@ -488,7 +497,7 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, "-U", input$unpaired$name)
       }
 
-      if (!is.null(input$unpaired_sequence) &&
+      if (input$unpaired_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-U", input$unpaired_sequence)
       }
@@ -543,17 +552,18 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, "-1", input$mate1$name)
       }
 
-      if (!is.null(input$mate1_sequence) &&
+      if (input$mate1_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-1", input$mate1_sequence)
       }
 
       if (!is.null(input$mate2) &&
           input$readsAreSequences == FALSE) {
+        # cmd_line <- str_remove(cmd_line, "-c")
         cmd_line <- paste(cmd_line, "-2", input$mate2$name)
       }
 
-      if (!is.null(input$mate2_sequence) &&
+      if (input$mate2_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-2", input$mate2_sequence)
       }
@@ -565,13 +575,13 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, "-U", input$unpaired$name)
       }
 
-      if (!is.null(input$unpaired_sequence) &&
+      if (input$unpaired_sequence != "" &&
           input$readsAreSequences == TRUE) {
         cmd_line <- paste(cmd_line, "-U", input$unpaired_sequence)
       }
     }
-    update_command_line(session, "-c", input$readsAreSequences, default = FALSE)
-    updateTextAreaInput(session, "bt2Options", value = str_squish(str_trim(cmd_line, side = "both")))
+    # updateTextAreaInput(session, "bt2Options", value = str_squish(str_trim(cmd_line, side = "both")))
+    update_command_line(session, "-c", input$readsAreSequences, cmd_line = cmd_line, default = FALSE)
   })
 
   observeEvent(input$index, {
@@ -1046,10 +1056,11 @@ function(input, output, session) {
     function(session,
       option,
       value,
+      cmd_line = input$bt2Options,
       default = NULL,
       mutually_exclusive_options = NULL,
       replacement = NULL) {
-      cmd_line <- input$bt2Options
+      # cmd_line <- input$bt2Options
       if (is.na(value))
         return(NULL)
 
