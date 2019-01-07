@@ -14,6 +14,7 @@ library(rintrojs)
 library(parallel)
 library(markdown)
 library(rclipboard)
+library(shinyFeedback)
 library(shinydashboard)
 
 cores <- detectCores()
@@ -141,6 +142,7 @@ body <- dashboardBody(
   includeCSS("www/style.css"),
   useShinyjs(),
   introjsUI(),
+  useShinyFeedback(),
   tabItems(
     tabItem("bowtie2", bowtie2_tab),
     tabItem("crispr", crispr_tab),

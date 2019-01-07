@@ -26,6 +26,7 @@ function(input, output, session) {
   bowtie2_sam_tab_exists <- FALSE
 
   rvs <- reactiveValues()
+  requiredFields <- c()
 
   source("tooltips.R", local = TRUE)
 
@@ -376,9 +377,12 @@ function(input, output, session) {
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
     if (input$readsAreSequences) {
-      validate(
-        need(str_detect(input$mate1_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      feedbackDanger(
+        inputId = "mate1_sequence",
+        condition = !str_detect(input$mate1_sequence, "(^[ACTGN]+$)|^$"),
+        text = "Invalid sequence"
       )
+
       update_command_line(
         session,
         "-1",
@@ -399,9 +403,12 @@ function(input, output, session) {
 
   observeEvent(c(input$mate2, input$mate2_sequence), {
     if (input$readsAreSequences) {
-      validate(
-        need(str_detect(input$mate2_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      feedbackDanger(
+        inputId = "mate2_sequence",
+        condition = !str_detect(input$mate2_sequence, "(^[ACTGN]+$)|^$"),
+        text = "Invalid sequence"
       )
+
       update_command_line(
         session,
         "-2",
@@ -422,9 +429,12 @@ function(input, output, session) {
 
   observeEvent(c(input$unpaired, input$unpaired_sequence), {
     if (input$readsAreSequences) {
-      validate(
-        need(str_detect(input$unpaired_sequence, "(^[ACTGN]+$)|^$"), "Invalid Sequence")
+      feedbackDanger(
+        inputId = "unpaired_sequence",
+        condition = !str_detect(input$unpaired_sequence, "(^[ACTGN]+$)|^$"),
+        text = "Invalid sequence"
       )
+
       update_command_line(
         session,
         "-U",
@@ -589,6 +599,54 @@ function(input, output, session) {
   })
 
   observeEvent(input$submit, {
+    msgs <- list()
+
+    if (input$index == "") {
+      msgs <- append(msgs, "Index")
+    }
+
+    if (input$paired == "Paired") {
+      if (input$readsAreSequences) {
+        if (input$mate1_sequence == "") {
+          msgs <- append(msgs, "Mate one sequence")
+        }
+
+        if (input$mate2_sequence == "") {
+          msgs <- append(msgs, "Mate two sequence")
+        }
+      } else {
+        if (is.null(input$mate1)) {
+          msgs <- append(msgs, "File with mate one reads")
+        }
+
+        if (is.null(input$mate2)) {
+          msgs <- append(msgs, "File with mate two reads")
+        }
+      }
+    } else {
+      if (input$readsAreSequences) {
+        if (input$unpaired_sequence == "") {
+          msgs <- append(msgs, "Unpaired sequence")
+        }
+      } else {
+        if (is.null(input$unpaired)) {
+          msgs <- append(msgs, "Unpaired read file")
+        }
+      }
+    }
+
+    msgs <- lapply(msgs, tags$li)
+
+    showModal(modalDialog(
+      title = "Missing required inputs:",
+      tagAppendChildren(tags$ul(), tagList(msgs)),
+      easyClose = TRUE
+    ))
+
+    if (length(msgs) != 0) {
+      return(NULL)
+    }
+
     file_inputs <- list()
     if (input$readsAreSequences == FALSE) {
       if (input$paired == "Unpaired") {
