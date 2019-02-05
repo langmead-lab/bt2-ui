@@ -31,18 +31,15 @@ function(input, output, session) {
   source("tooltips.R", local = TRUE)
 
   register_mouseover_events(session)
-  
   # setBookmarkExclude(setdiff(names(isolate(reactiveValuesToList(input))), c("typeOfQualityValues")))
 
   disable("bt2Options")
-  
   output$clip <- renderUI({
     rclipButton("clipbtn",
       "Copy Command",
       input$bt2Options,
       icon("clipboard"))
   })
-  
   clicks <- 0
   onclick("toggleCommand", function() {
     toggle(id = "cmd_line", anim = TRUE)
@@ -55,7 +52,6 @@ function(input, output, session) {
     }
     clicks <<- clicks + 1
   }, TRUE)
-  
   shinyjs::runjs("$('#mate1_sequence').attr('maxlength', 500)")
   shinyjs::runjs("$('#mate2_sequence').attr('maxlength', 500)")
   shinyjs::runjs("$('#unpaired_sequence').attr('maxlength', 500)")
@@ -238,7 +234,6 @@ function(input, output, session) {
       c("-q", "-f", "--tab5", "--tab6", "--qseq", "-r", "-F")
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$inputFileFormat)
-    
     update_command_line(
       session,
       input$inputFileFormat,
@@ -528,11 +523,9 @@ function(input, output, session) {
 
   observeEvent(input$readsAreSequences, {
     cmd_line <- input$bt2Options
-    
     if (input$readsAreSequences) {
       shinyjs::hide("inputFileFormat")
       shinyjs::hide("typeOfQualityValues")
-      
       if (input$typeOfQualityValues != "--phred33") {
         cmd_line <- str_replace(cmd_line, input$typeOfQualityValues, "")
       }
@@ -542,7 +535,6 @@ function(input, output, session) {
     } else {
       shinyjs::show("inputFileFormat")
       shinyjs::show("typeOfQualityValues")
-      
       if (input$typeOfQualityValues != "--phred33") {
         cmd_line <- paste(cmd_line, input$typeOfQualityValues)
       }
@@ -550,7 +542,6 @@ function(input, output, session) {
         cmd_line <- paste(cmd_line, input$inputFileFormat)
       }
     }
-    
     if (input$paired == "Paired") {
       cmd_line <- str_replace(cmd_line, paste0("-1", "\\s+\\S+"), "")
       cmd_line <-
@@ -658,7 +649,7 @@ function(input, output, session) {
     }
 
     out <-
-      submit_bowtie2_query(input$bt2Options, input$upto, file_inputs, input$index)
+      submit_query(input$bt2Options, input$upto, file_inputs, input$index)
 
     if (out$stdout == "") {
       usage_lines <- str_split(bt2_usage, "\n")[[1]]
@@ -740,10 +731,16 @@ function(input, output, session) {
 
 
   #### CRISPR
+  observeEvent(input$crisprSequence, {
+    feedbackDanger(
+      inputId = "crisprSequence",
+      condition = !str_detect(input$crisprSequence, "(^[ACTGN]+$)|^$"),
+      text = "Invalid sequence"
+    )
+  })
   observeEvent(input$crisprSubmit, {
     shinyjs::disable("crisprSubmit")
     on.exit(shinyjs::enable("crisprSubmit"))
-    
     if (input$crisprInput == "sequence") {
       data <- paste(">r1", input$crisprSequence, sep = "\n")
       hash <- digest(data, algo = "sha256")
@@ -759,15 +756,15 @@ function(input, output, session) {
     progress <- shiny::Progress$new(style = "notification")
     progress$set(message = "Running Bowtie query", value = 0)
     on.exit(progress$close(), add = TRUE)
-    
     query <-
-      paste("-x",
-        input$index2,
+      paste(input$index2,
         "-F",
         paste0(input$kmer + 1, ",", input$offset),
         "-a",
+        "-v3",
+        "-S",
         filepath)
-    out <- submit_bowtie2_query(query, index = input$index2)
+    out <- submit_query(query, aligner = "bowtie", index = input$index2)
 
     if (out$stdout == "") {
       usage_lines <- str_split(bt2_usage, "\n")[[1]]
@@ -786,11 +783,9 @@ function(input, output, session) {
         append = FALSE,
         style = "error"
       )
-      
       updateTabsetPanel(session, "crisprtabs", selected = "Welcome")
       return(NULL)
     }
-    
     progress$set(value = 0.40, message = "Highlighting output")
 
     rvs$crispr_sam <- out$stdout
@@ -807,7 +802,6 @@ function(input, output, session) {
     }
 
     progress$set(value = 0.50, message = "Rendering k-mer diagram")
-    
     fig <- kmer_diagram(rvs$crispr_sam)
     updateSelectizeInput(
       session,
@@ -838,7 +832,6 @@ function(input, output, session) {
           )
         ))
     })
-    
     progress$set(value = 1, message = "Done")
   })
 
@@ -1037,13 +1030,11 @@ function(input, output, session) {
       )
     )
   })
-  
   observeEvent(input$crisprtutorial, {
     oldIndex <- input$index2
     oldSequence <- input$crisprSequence
     oldKmer <- input$kmer
     oldOffset <- input$offset
-    
     update_funcs <- c(
       sprintf("Shiny.setInputValue('showModal', %d)", input$crisprtutorial),
       sprintf("Shiny.setInputValue('index2', '%s')", oldIndex),
@@ -1051,13 +1042,11 @@ function(input, output, session) {
       sprintf("Shiny.setInputValue('kmer', %d)", oldKmer),
       sprintf("Shiny.setInputValue('offset', %d)", oldOffset)
     )
-    
     updateNumericInput(session, "kmer", value = 20)
     updateNumericInput(session, "offset", value = 1)
     updateSelectizeInput(session, "index2", selected = "C_elegans_WS195")
     updateTextAreaInput(session, "crisprSequence", value = "GCCGGGCGCTGGTTATGGTCAGTTCGAGCATAAGGCTGAC")
     delay(100, click("crisprSubmit"))
-    
     introjs(
       session,
       events = list("onexit" = I(paste0(update_funcs, collapse = ";"))),
@@ -1085,7 +1074,6 @@ function(input, output, session) {
       )
     )
   })
-  
   observeEvent(input$showModal, {
     showModal(
       modalDialog(
@@ -1167,15 +1155,16 @@ function(input, output, session) {
       cmd_line
     }
 
-  submit_bowtie2_query <-
+  submit_query <-
     function(query,
+      aligner = "bowtie2",
       upto = 1000,
       file_inputs = NULL,
       index = NULL) {
       query <- query %>%
-        str_remove("^bowtie2\\s*") %>%
+        str_remove(paste0("^", aligner, "\\s*")) %>%
         paste("--shmem", "--no-head")
-      bt2 <- paste("/software", "bowtie2/bowtie2", sep = "/")
+      bin_path <- paste("/software", paste0(aligner, "/", aligner), sep = "/")
 
       if (str_detect(query, "--upto") == FALSE) {
         query <- paste(query, "--upto", upto)
@@ -1195,7 +1184,7 @@ function(input, output, session) {
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
 
       run(
-        bt2,
+        bin_path,
         argv,
         env = c(Sys.getenv(), BOWTIE2_INDEXES = BOWTIE2_INDEXES),
         error_on_status = FALSE
@@ -1228,7 +1217,6 @@ function(input, output, session) {
     if (isolate(session$input$width[[1]]) < 768) {
       return(NULL)
     }
-    
     text <- ""
     sapply(opts, function(opt) {
       t <- paste(get_help_text(opt), collapse = "\n")
@@ -1252,7 +1240,6 @@ function(input, output, session) {
     if (isolate(session$input$width[[1]]) < 768) {
       return(NULL)
     }
-    
     observe({
       removeTab("bowtie2tabs", "Help", session = session)
     })
