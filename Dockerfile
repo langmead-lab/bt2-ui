@@ -2,10 +2,16 @@ FROM rocker/shiny
 
 RUN apt-get update && apt-get install -y python python-pip virtualenv curl less git zlib1g-dev libtbb-dev libssl-dev
 
-RUN git clone https://github.com/BenLangmead/bowtie2 /tmp/bowtie2 \
+RUN git clone https://github.com/BenLangmead/bowtie2.git /tmp/bowtie2 \
         && cd /tmp/bowtie2 && make bowtie2-align-s BOWTIE_SHARED_MEM=1 \
         && mkdir -p /software/bowtie2 \
         && cp /tmp/bowtie2/bowtie2-align-s /tmp/bowtie2/bowtie2 /software/bowtie2
+
+RUN git clone https://github.com/BenLangmead/bowtie.git /tmp/bowtie \
+        && cd /tmp/bowtie && git checkout bt2_idx_support \
+        && make bowtie-align-s BOWTIE_SHARED_MEM=1 \
+        && mkdir -p /software/bowtie \
+        && cp /tmp/bowtie/bowtie-align-s /tmp/bowtie/bowtie /software/bowtie
 
 RUN Rscript -e "install.packages(c('shinyFeedback', 'devtools', 'dplyr', 'readr', 'shinyjs', 'rclipboard', 'processx', 'reticulate', 'shinyBS', 'digest', 'rintrojs'), repos='https://cran.rstudio.com/')" \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
