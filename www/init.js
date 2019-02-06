@@ -52,6 +52,7 @@ $(window).resize(function(event) {
 $(document).ready(function() {
     $("textarea").on('input', function(event) {
         var text = $(this).val().split("\n")[0];
+        text = text.replace(/\s|[^ACTGN]/g, "");
         $(this).val(text);
     });
 });

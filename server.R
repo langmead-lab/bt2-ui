@@ -24,6 +24,8 @@ library(dplyr)
 function(input, output, session) {
   crispr_sam_tab_exists <- FALSE
   bowtie2_sam_tab_exists <- FALSE
+  
+  simpleFuncRegex <- "^(L|G|S)(,-?(\\d+(\\.\\d+)?)?){0,2}$"
 
   rvs <- reactiveValues()
   requiredFields <- c()
@@ -62,10 +64,6 @@ function(input, output, session) {
   #   addClass(selector = "body", class = "sidebar-collapse")
   # })
 
-  observeEvent(input$nCeil, {
-    update_command_line(session, "--n-ceil", input$nCeil, default = 15)
-  })
-
   observeEvent(input$dPad, {
     update_command_line(session, "--dpad", input$dPad, default = 15)
   })
@@ -76,6 +74,11 @@ function(input, output, session) {
 
   observeEvent(input$interval, {
     interval <- str_remove(input$interval, "\\s")
+    feedbackDanger(
+      inputId = "interval",
+      condition = !str_detect(input$interval, simpleFuncRegex),
+      text = "Invalid function"
+    )
     default <- "S,1,1.15"
     if (interval == "")
       interval <- default
@@ -85,6 +88,11 @@ function(input, output, session) {
 
   observeEvent(input$nCeil, {
     nCeil <- str_remove(input$nCeil, "\\s")
+    feedbackDanger(
+      inputId = "nCeil",
+      condition = !str_detect(input$nCeil, simpleFuncRegex),
+      text = "Invalid function"
+    )
     default <- "L,0,0.15"
     if (nCeil == "") {
       nCeil <- default
@@ -95,6 +103,11 @@ function(input, output, session) {
 
   observeEvent(input$scoreMin, {
     scoreMin <- str_remove(input$scoreMin, "\\s")
+    feedbackDanger(
+      inputId = "scoreMin",
+      condition = !str_detect(input$scoreMin, simpleFuncRegex),
+      text = "Invalid function"
+    )
     if (input$alignmentType == "--end-to-end") {
       default <- "L,-0.6,-0.6"
     } else {
@@ -232,6 +245,7 @@ function(input, output, session) {
   observeEvent(input$inputFileFormat, {
     mutually_exclusive_options <-
       c("-q", "-f", "--tab5", "--tab6", "--qseq", "-r", "-F")
+    warning(input$inputFileFormat)
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$inputFileFormat)
     update_command_line(
@@ -372,12 +386,6 @@ function(input, output, session) {
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
     if (input$readsAreSequences) {
-      feedbackDanger(
-        inputId = "mate1_sequence",
-        condition = !str_detect(input$mate1_sequence, "(^[ACTGN]+$)|^$"),
-        text = "Invalid sequence"
-      )
-
       update_command_line(
         session,
         "-1",
@@ -398,12 +406,6 @@ function(input, output, session) {
 
   observeEvent(c(input$mate2, input$mate2_sequence), {
     if (input$readsAreSequences) {
-      feedbackDanger(
-        inputId = "mate2_sequence",
-        condition = !str_detect(input$mate2_sequence, "(^[ACTGN]+$)|^$"),
-        text = "Invalid sequence"
-      )
-
       update_command_line(
         session,
         "-2",
@@ -424,12 +426,6 @@ function(input, output, session) {
 
   observeEvent(c(input$unpaired, input$unpaired_sequence), {
     if (input$readsAreSequences) {
-      feedbackDanger(
-        inputId = "unpaired_sequence",
-        condition = !str_detect(input$unpaired_sequence, "(^[ACTGN]+$)|^$"),
-        text = "Invalid sequence"
-      )
-
       update_command_line(
         session,
         "-U",
@@ -731,13 +727,6 @@ function(input, output, session) {
 
 
   #### CRISPR
-  observeEvent(input$crisprSequence, {
-    feedbackDanger(
-      inputId = "crisprSequence",
-      condition = !str_detect(input$crisprSequence, "(^[ACTGN]+$)|^$"),
-      text = "Invalid sequence"
-    )
-  })
   observeEvent(input$crisprSubmit, {
     shinyjs::disable("crisprSubmit")
     on.exit(shinyjs::enable("crisprSubmit"))
@@ -1121,7 +1110,9 @@ function(input, output, session) {
         regex <- paste0(option, "\\s+\\S+")
       }
 
-      if (str_detect(cmd_line, option)) {
+      regex <- paste0("\\B", regex)
+
+      if (str_detect(cmd_line, paste0("\\B", option))) {
         if (value == default) {
           cmd_line <- str_replace(cmd_line, regex, "")
         } else {
@@ -1132,9 +1123,9 @@ function(input, output, session) {
       } else {
         sapply(mutually_exclusive_options, function(opt) {
           cmd_line <<- if (flag) {
-            str_replace(cmd_line, opt, "")
+            str_replace(cmd_line, paste0("\\B", opt), "")
           } else {
-            str_replace(cmd_line, paste0(opt, "(\\s+\\S+)?"), "")
+            str_replace(cmd_line, paste0("\\B", opt, "(\\s+\\S+)?"), "")
           }
         })
 
