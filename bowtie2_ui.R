@@ -50,12 +50,22 @@ bowtie2_tab <- fluidRow(
                 "mate1",
                 label = NULL,
                 placeholder = "Select reads for mate 1",
+                accept = c(
+                  "text/plain",
+                  ".fa",
+                  ".fq"
+                ),
                 multiple = FALSE
               ),
               fileInput(
                 "mate2",
                 label = NULL,
                 placeholder = "Select reads for mate 2",
+                accept = c(
+                  "text/plain",
+                  ".fa",
+                  ".fq"
+                ),
                 multiple = FALSE
               )
             )
@@ -83,6 +93,11 @@ bowtie2_tab <- fluidRow(
                 "unpaired",
                 label = NULL,
                 placeholder = "Select unpaired reads",
+                accept = c(
+                  "text/plain",
+                  ".fa",
+                  ".fq"
+                ),
                 multiple = FALSE
               )
             )
