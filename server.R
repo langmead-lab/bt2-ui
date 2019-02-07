@@ -751,7 +751,7 @@ function(input, output, session) {
         paste0(input$kmer + 1, ",", input$offset),
         filepath,
         "-a",
-        "-v1",
+        "-v3",
         "-S")
     out <- submit_query(query, aligner = "bowtie", index = input$index2, upto = 0)
 
@@ -1172,7 +1172,6 @@ function(input, output, session) {
       }
 
       argv <- str_split(query, "\\s+")[[1]]
-      warning(argv)
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
 
       run(
