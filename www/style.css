@@ -1,3 +1,8 @@
+.shiny-file-input-progress {
+    height: 5px;
+    margin-bottom: 0px;
+}
+
 body {
     font-family: Helvetica;
 }
