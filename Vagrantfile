@@ -14,7 +14,7 @@ INSTANCE_TYPE = "c4.xlarge"
 BID_PRICE = "0.06"
 ACCOUNT = "jhu-langmead"
 KEYPAIR = "bt2-ui-us-east-2"
-PUBLIC_IP = "18.211.104.174"
+PUBLIC_IP = "18.218.70.192"
 
 Vagrant.configure("2") do |config|
 
@@ -72,23 +72,7 @@ Vagrant.configure("2") do |config|
     config.vm.provision "file", source: "~/.aws/bt2-ui.pem", destination: "~ec2-user/.ssh/id_rsa"
 
     config.vm.provision "shell", privileged: true, name: "install Linux packages", inline: <<-SHELL
-        yum install -q -y aws-cli wget unzip tree
-    SHELL
-
-    config.vm.provision "shell", privileged: false, name: "install bowtie2", inline: <<-SHELL
-        mkdir -p /work/software
-        cd /work/software
-        VER=2.3.4.3
-        SYS=linux-x86_64
-        wget -q https://github.com/BenLangmead/bowtie2/releases/download/v${VER}/bowtie2-${VER}-${SYS}.zip
-        unzip bowtie2-${VER}-${SYS}.zip
-        mv bowtie2-${VER}-${SYS} bowtie2
-
-        echo "*** Bowtie 2 executables now present in /work/software/bowtie2 ***"
-        echo "Space:"
-        du -sh /work/software/bowtie2
-        echo "Tree:"
-        tree /work/software/bowtie2
+        yum install -q -y aws-cli wget unzip tree git
     SHELL
 
     config.vm.provision "shell", privileged: false, name: "download indexes", inline: <<-SHELL
@@ -185,10 +169,27 @@ Vagrant.configure("2") do |config|
         tree /work/indexes/bowtie2
     SHELL
 
+    config.vm.provision "shell", privileged: true, name: "checkout bt2-ui", inline: <<-SHELL
+        mkdir -p /work/software
+        cd /work/software
+        git clone https://github.com/langmead-lab/bt2-ui.git
+
+        echo "*** bt2-ui is now present in /work/software/bt2-ui ***"
+        echo "Space:"
+        du -sh /work/software/bt2-ui
+        echo "Tree:"
+        tree /work/software/bt2-ui
+    SHELL
+
+    config.vm.provision "shell", privileged: true, name: "build bt2-ui container", inline: <<-SHELL
+        cd /work/software/bt2-ui
+        ./build.sh
+    SHELL
+
     config.vm.provision "shell", privileged: true, name: "docker run bt2-ui", inline: <<-SHELL
-        docker run --name bt2-ui -p 80:3838 \
-            -v /work/indexes:/indexes \
-            -v /work/software:/software \
-            -d $* benlangmead/bt2-ui
+        cd /work/software/bt2-ui
+        docker run --privileged --shm-size 60g --name bt2-ui --rm -p 80:3838 \
+            -v /work/indexes/bowtie2:/indexes \
+            -d benlangmead/bt2-ui
     SHELL
 end
