@@ -190,10 +190,11 @@ bowtie2_tab <- fluidRow(
           label = h5("Input File Format"),
           choices = list(
             "FASTQ" = "-q",
-            "FASTA" = "-f",
-            "TAB5" = "--tab5",
-            "TAB6" = "--tab6",
-            "QSEQ" = "--qseq"
+            "FASTA" = "-f"
+            # temporarily disabled
+            # "TAB5" = "--tab5",
+            # "TAB6" = "--tab6",
+            # "QSEQ" = "--qseq"
           ),
           selected = "-q"
         ),
