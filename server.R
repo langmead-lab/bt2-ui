@@ -245,7 +245,6 @@ function(input, output, session) {
   observeEvent(input$inputFileFormat, {
     mutually_exclusive_options <-
       c("-q", "-f", "--tab5", "--tab6", "--qseq", "-r", "-F")
-    warning(input$inputFileFormat)
     mutually_exclusive_options <-
       setdiff(mutually_exclusive_options, input$inputFileFormat)
     update_command_line(
@@ -624,13 +623,13 @@ function(input, output, session) {
 
     msgs <- lapply(msgs, tags$li)
 
-    showModal(modalDialog(
-      title = "Missing required inputs:",
-      tagAppendChildren(tags$ul(), tagList(msgs)),
-      easyClose = TRUE
-    ))
-
     if (length(msgs) != 0) {
+      showModal(modalDialog(
+          title = "Missing required inputs:",
+          tagAppendChildren(tags$ul(), tagList(msgs)),
+          easyClose = TRUE
+      ))
+
       return(NULL)
     }
 
