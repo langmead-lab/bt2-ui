@@ -749,11 +749,11 @@ function(input, output, session) {
       paste(input$index2,
         "-F",
         paste0(input$kmer + 1, ",", input$offset),
+        filepath,
         "-a",
-        "-v3",
-        "-S",
-        filepath)
-    out <- submit_query(query, aligner = "bowtie", index = input$index2)
+        "-v1",
+        "-S")
+    out <- submit_query(query, aligner = "bowtie", index = input$index2, upto = 0)
 
     if (out$stdout == "") {
       usage_lines <- str_split(bt2_usage, "\n")[[1]]
@@ -1148,16 +1148,16 @@ function(input, output, session) {
 
   submit_query <-
     function(query,
-      aligner = "bowtie2",
       upto = 1000,
       file_inputs = NULL,
-      index = NULL) {
+      index = NULL,
+      aligner = "bowtie2") {
       query <- query %>%
         str_remove(paste0("^", aligner, "\\s*")) %>%
-        paste("--shmem", "--no-head")
+        paste("--shmem", if (aligner == "bowtie") "--sam-nohead" else "--no-head")
       bin_path <- paste("/software", paste0(aligner, "/", aligner), sep = "/")
 
-      if (str_detect(query, "--upto") == FALSE) {
+      if (str_detect(query, "--upto") == FALSE && upto != 0) {
         query <- paste(query, "--upto", upto)
       }
 
@@ -1172,12 +1172,13 @@ function(input, output, session) {
       }
 
       argv <- str_split(query, "\\s+")[[1]]
+      warning(argv)
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
 
       run(
         bin_path,
         argv,
-        env = c(Sys.getenv(), BOWTIE2_INDEXES = BOWTIE2_INDEXES),
+        env = c(Sys.getenv(), BOWTIE2_INDEXES = BOWTIE2_INDEXES, BOWTIE_INDEXES = BOWTIE2_INDEXES),
         error_on_status = FALSE
       )
     }
