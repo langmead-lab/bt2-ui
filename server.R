@@ -372,16 +372,14 @@ function(input, output, session) {
       "index",
       server = TRUE,
       selected = "GRCh38",
-      choices = choices,
-      selected = NULL
+      choices = choices
     )
     updateSelectizeInput(
       session,
       "index2",
       server = TRUE,
       selected = "GRCh38",
-      choices = choices,
-      selected = NULL
+      choices = choices
     )
   })
 
