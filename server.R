@@ -371,6 +371,7 @@ function(input, output, session) {
       session,
       "index",
       server = TRUE,
+      selected = "GRCh38",
       choices = choices,
       selected = NULL
     )
@@ -378,6 +379,7 @@ function(input, output, session) {
       session,
       "index2",
       server = TRUE,
+      selected = "GRCh38",
       choices = choices,
       selected = NULL
     )
