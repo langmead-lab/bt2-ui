@@ -6,6 +6,7 @@ library(shinydashboard)
 bowtie2_tab <- fluidRow(
   column(
     width = 9,
+    id = "main",
     box(
       width = NULL,
       solidHeader = TRUE,

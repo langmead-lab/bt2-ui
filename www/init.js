@@ -56,3 +56,26 @@ $(document).ready(function() {
         $(this).val(text);
     });
 });
+
+// https://stackoverflow.com/a/3701328
+$.fn.scrollEnd = function(callback, timeout) {
+  $(this).scroll(function(){
+    var $this = $(this);
+    if ($this.data('scrollTimeout')) {
+      clearTimeout($this.data('scrollTimeout'));
+    }
+    $this.data('scrollTimeout', setTimeout(callback,timeout));
+  });
+};
+
+$(document).ready(function (event) {
+  var top = $('#main').offset().top - parseFloat($('#main').css('marginTop').replace(/auto/, 0));
+
+  $(window).scrollEnd(function (event) {
+    var y = $(this).scrollTop();
+
+    var difference = y - top;
+    difference = y < top ? 0 : difference;
+    $("#main").stop().animate({"top": difference}, 400, "linear");
+  }, 250);
+});
