@@ -1,6 +1,6 @@
 FROM rocker/shiny
 
-RUN apt-get update && apt-get install -y python python-pip virtualenv curl less git zlib1g-dev libtbb-dev libssl-dev
+RUN apt-get update && apt-get install -y python python-pip python-virtualenv curl less git zlib1g-dev libtbb-dev libssl-dev
 
 RUN git clone https://github.com/BenLangmead/bowtie2.git /tmp/bowtie2 \
         && cd /tmp/bowtie2 && make bowtie2-align-s BOWTIE_SHARED_MEM=1 \
