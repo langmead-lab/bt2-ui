@@ -775,13 +775,12 @@ function(input, output, session) {
       return(NULL)
     }
     progress$set(value = 0.40, message = "Highlighting output")
-
     rvs$crispr_sam <- out$stdout
 
     if (!crispr_sam_tab_exists) {
       insertTab(
         inputId = "crisprtabs",
-        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;", onscroll="myfunction()",
           uiOutput("crispr_output")),
         target = "Welcome",
         select = TRUE
@@ -791,6 +790,8 @@ function(input, output, session) {
 
     progress$set(value = 0.50, message = "Rendering k-mer diagram")
     fig <- kmer_diagram(rvs$crispr_sam)
+    rvs$crispr_sam <- str_split(rvs$crispr_sam, "\n")[[1]]
+    rvs$crispr_sam_upto <- min(1000, length(rvs$crispr_sam))
     updateSelectizeInput(
       session,
       "kmer_filter",
@@ -823,28 +824,24 @@ function(input, output, session) {
     progress$set(value = 1, message = "Done")
   })
 
-  observeEvent(rvs$crispr_sam, {
-    output$crispr_output <- renderUI({
-      HTML(highlight_sam(rvs$crispr_sam))
-    })
-  })
-
   observeEvent(c(
     rvs$crispr_sam,
     input$kmer_filter,
     input$crisprToggleHighlight
   ),
     {
-      out <- rvs$crispr_sam
+      if (length(rvs$crispr_sam) > 0) {
+        out <- rvs$crispr_sam[1:rvs$crispr_sam_upto] %>% str_flatten(collapse = "\n")
+      } else {
+        out <- rvs$crispr_sam
+      }
 
       if (input$kmer_filter != "") {
         pat <-
           paste(input$kmer_filter,
             reverse_complement(input$kmer_filter),
             sep = "|")
-        out <- str_split(rvs$crispr_sam, "\n") %>% {
-          str_subset(.[[1]], pat)
-        } %>% str_flatten(collapse = "\n")
+        out <- str_subset(rvs$crispr_sam, pat) %>% str_flatten(collapse = "\n")
       }
 
       updateSelectizeInput(session, "kmer_filter", selected = input$kmer_filter)
@@ -858,12 +855,36 @@ function(input, output, session) {
       })
     })
 
+  observeEvent(input$scrolledToBottom, {
+    if (rvs$crispr_sam_upto == length(rvs$crispr_sam)) {
+      return(NULL)
+    }
+
+    num_messages <-
+      min(100, length(rvs$crispr_sam) - rvs$crispr_sam_upto)
+    start <- rvs$crispr_sam_upto + 1
+    end <- rvs$crispr_sam_upto + num_messages
+    rvs$crispr_sam_upto <- rvs$crispr_sam_upto + num_messages
+    sam_records <- rvs$crispr_sam[start:end]
+    if (input$crisprToggleHighlight %% 2 == 0) {
+      style <- "perldoc"
+    } else {
+      style = "bw"
+    }
+    session$sendCustomMessage("samRecords",
+      highlight_sam(
+        str_flatten(sam_records, collapse = "\n"),
+        nowrap = TRUE,
+        style = style
+      ))
+  })
+
   output$crisprDownloadSAM <- downloadHandler(
     filename = function() {
       paste("crispr-", format(Sys.time(), "%m%d%Y%H%M%S"), ".sam", sep = "")
     },
     content = function(file) {
-      write_file(rvs$crispr_sam, file)
+      write_file(str_flatten(rvs$crispr_sam, collapse = "\n"), file)
     }
   )
 
@@ -1181,7 +1202,7 @@ function(input, output, session) {
       )
     }
 
-  highlight_sam <- function(sam, style = "perldoc") {
+  highlight_sam <- function(sam, style = "perldoc", nowrap = FALSE) {
     pygments <- import("pygments")
     pygments.lexers <- import("pygments.lexers")
     pygments.formatters <- import("pygments.formatters")
@@ -1190,7 +1211,7 @@ function(input, output, session) {
     sam_lexer <-
       pygments.lexers$load_lexer_from_file(path_to_sam_lexer, "SamLexer")
     formatter <-
-      pygments.formatters$HtmlFormatter(style = style)
+      pygments.formatters$HtmlFormatter(style = style, nowrap = nowrap)
     formatter$noclasses = TRUE
     pygments$highlight(sam, sam_lexer, formatter)
   }

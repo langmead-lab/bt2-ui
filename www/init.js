@@ -79,3 +79,16 @@ $(document).ready(function (event) {
     $("#main").stop().animate({"top": difference}, 400, "linear");
   }, 250);
 });
+
+function myfunction() {
+  var e = $('div[data-value="SAM Output"]')[0];
+  if (e.scrollTop >= (e.scrollHeight - e.offsetHeight)) {
+    console.log("scrolled to bottom");
+    Shiny.setInputValue("scrolledToBottom", Math.random());
+    e.scrollTop = e.scrollHeight;
+  }
+}
+
+Shiny.addCustomMessageHandler("samRecords", function(message) {
+  $("#crispr_output > .highlight > pre").append(message);
+});
