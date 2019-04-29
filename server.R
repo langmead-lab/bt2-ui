@@ -780,7 +780,7 @@ function(input, output, session) {
     if (!crispr_sam_tab_exists) {
       insertTab(
         inputId = "crisprtabs",
-        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;", onscroll="myfunction()",
+        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;", onscroll="loadSam()",
           uiOutput("crispr_output")),
         target = "Welcome",
         select = TRUE
@@ -856,7 +856,7 @@ function(input, output, session) {
     })
 
   observeEvent(input$scrolledToBottom, {
-    if (rvs$crispr_sam_upto == length(rvs$crispr_sam)) {
+    if (input$kmer_filter != "" || rvs$crispr_sam_upto == length(rvs$crispr_sam)) {
       return(NULL)
     }
 

@@ -80,10 +80,9 @@ $(document).ready(function (event) {
   }, 250);
 });
 
-function myfunction() {
+function loadSam() {
   var e = $('div[data-value="SAM Output"]')[0];
   if (e.scrollTop >= (e.scrollHeight - e.offsetHeight)) {
-    console.log("scrolled to bottom");
     Shiny.setInputValue("scrolledToBottom", Math.random());
     e.scrollTop = e.scrollHeight;
   }
