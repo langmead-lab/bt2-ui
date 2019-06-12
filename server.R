@@ -24,7 +24,7 @@ library(dplyr)
 function(input, output, session) {
   crispr_sam_tab_exists <- FALSE
   bowtie2_sam_tab_exists <- FALSE
-  
+
   simpleFuncRegex <- "^(L|G|S)(,-?(\\d+(\\.\\d+)?)?){0,2}$"
 
   rvs <- reactiveValues()
@@ -380,7 +380,14 @@ function(input, output, session) {
       server = TRUE,
       selected = "GRCh38",
       choices = choices
-    )
+    # ),
+    # updateSelectizeInput(
+    #   session,
+    #   "index3",
+    #   server = TRUE,
+    #   selected = "GRCh38",
+    #   choices = choices #TODO This needs to be changed to a list of SAM Files
+    # )
   })
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
@@ -890,7 +897,7 @@ function(input, output, session) {
 
   # output$crisprSAMCopy <- renderUI({
   #   out <- rvs$crispr_sam
-  #   
+  #
   #   if (input$kmer_filter != "") {
   #     pat <-
   #       paste(input$kmer_filter,
@@ -900,7 +907,7 @@ function(input, output, session) {
   #       str_subset(.[[1]], pat)
   #     } %>% str_flatten(collapse = "\n")
   #   }
-  #     
+  #
   #   rclipButton("crisprClipBtn",
   #     "Copy",
   #     out,
