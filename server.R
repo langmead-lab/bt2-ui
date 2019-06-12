@@ -380,7 +380,7 @@ function(input, output, session) {
       server = TRUE,
       selected = "GRCh38",
       choices = choices
-    # ),
+    )#,
     # updateSelectizeInput(
     #   session,
     #   "index3",
