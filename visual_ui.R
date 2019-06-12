@@ -11,7 +11,7 @@ visuals_tab <- fluidRow(column(
         h4("Welcome to the Visual App!"),
         p(
           "This app is designed
-          to help you see"
+          to help you see what your data looks like."
         )
       )
     )
