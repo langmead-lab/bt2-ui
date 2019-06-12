@@ -4,6 +4,7 @@ library(processx)
 
 source("bowtie2_ui.R")
 source("crispr_ui.R")
+source("visual_ui.R")
 
 virtualenv_create("r-reticulate")
 use_virtualenv("r-reticulate")
