@@ -385,7 +385,7 @@ function(input, output, session) {
     #   session,
     #   "index3",
     #   server = TRUE,
-    #   selected = "GRCh38",
+    #   selected = "GRCh38", #TODO This should be changed to a SAM file
     #   choices = choices #TODO This needs to be changed to a list of SAM Files
     # )
   })
