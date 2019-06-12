@@ -10,12 +10,29 @@ visuals_tab <- fluidRow(column(
       width = 6,
       div(id = "selectVisualIndex",
         selectizeInput(
-          "index2",
+          "index3",
           label = NULL,
           options = list(placeholder = "Select Index"),
           choices = NULL
         ))
-    ))),
+    ),
+    column(
+      width = 6,
+      div(id = "fileInput",
+      fileInput(
+        "sam File",
+        label = NULL,
+        placeholder = "Select sam File",
+        accept = c(
+          ".sam"
+        ),
+        multiple = FALSE
+      )
+      )
+    )
+  ),
+  actionButton("visualSumbit", label = "Submit")
+),
   box(
     width = NULL,
     tabsetPanel(id = "visualtabs",
