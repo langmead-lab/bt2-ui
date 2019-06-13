@@ -380,14 +380,17 @@ function(input, output, session) {
       server = TRUE,
       selected = "GRCh38",
       choices = choices
-    )#,
-    # updateSelectizeInput(
-    #   session,
-    #   "index3",
-    #   server = TRUE,
-    #   selected = "GRCh38", #TODO This should be changed to a SAM file
-    #   choices = choices #TODO This needs to be changed to a list of SAM Files
-    # )
+    )
+  })
+  observe({
+    samChoices <- list.files("/sams")
+    updateSelectizeInput(
+      session,
+      "index3",
+      server = TRUE,
+      selected = "eg1",
+      choices = samChoices
+    )
   })
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
