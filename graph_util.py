@@ -54,6 +54,9 @@ def read_quality_converter(read_quality):
         for j in range(len(read_quality[i])):
             #Converting the read quality data to probabilities
             read_quality[i][j] = phred33_to_q(read_quality[i][j])
-    return read_quality
-# a, b, c, d, e = parse("eg1.sam")
-# print(read_quality_converter(d))
+
+def make_data_for_box_plot(read_quality):
+    data = [[]]
+    for i in range(len(read_quality)):
+        data.append(read_quality[i])
+    return data
