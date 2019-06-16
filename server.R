@@ -1269,7 +1269,6 @@ function(input, output, session) {
 
   ###VISUALS
   observeEvent(input$visualSubmit, {
-     if (is.null(input$samFile)) {
         return(NULL)
      }
     else {
