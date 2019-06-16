@@ -1266,25 +1266,31 @@ function(input, output, session) {
       removeTab("bowtie2tabs", "Help", session = session)
     })
   }
-  
+
   ###VISUALS
   observeEvent(input$visualSubmit, {
      if (is.null(input$samFile)) {
         return(NULL)
      }
     else {
-      source_python("parser.py")
+      source_python("graph_util.py")
       graph_data <- parse(input$samFile$datapath)
-      
+
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       match_scores <- graph_data[[5]]
-      #output$test <- renderText({match_scores})
-      output$boxplot <-renderPlot({
-        plot(rnorm(60))
+      read_quality <- graph_data[[4]]
+
+      #plot_ly(x = read_quality, type = 'box') #%>%
+        #add_trace(x = read_quality[[1]]) %>%
+        #layout(title = "Read Quality Data")
+      asdf <- plot_ly(y = ~rnorm(50), type = "box") 
+
+      output$boxplot <-renderPlotly({
+        asdf
       })
       output$histogram <-renderPlotly({
-        plot_ly(x = graph_data[[5]], type = 'histogram')
+        plot_ly(x = match_scores, type = 'histogram')
       })
       output$pieplot <- renderPlotly({
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie')
