@@ -49,9 +49,10 @@ visuals_tab <- fluidRow(column(
   ),
 box(
   width = NULL,
+  textOutput("noFile"),
   plotlyOutput("histogram"),
   br(),
-  plotlyOutput("test"),
+  plotlyOutput("boxplot"),
   br(),
   plotlyOutput("pieplot")
 )
