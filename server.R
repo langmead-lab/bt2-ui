@@ -1277,18 +1277,14 @@ function(input, output, session) {
       graph_data <- parse(input$samFile$datapath)
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-      read_quality <- graph_data[[4]]
-      read_quality_test <- read_quality[[1]]
       match_scores <- graph_data[[5]]
       read_quality <- graph_data[[4]]
 
-      #plot_ly(x = read_quality, type = 'box') #%>%
-        #add_trace(x = read_quality[[1]]) %>%
-        #layout(title = "Read Quality Data")
-      asdf <- plot_ly(y = ~rnorm(50), type = "box") 
+      output$test2 <- renderText({typeof(read_quality[[1]])})
 
-      output$boxplot <-renderPlotly({
-        asdf
+      output$test <-renderPlotly({
+        plot_ly(x = read_quality[[1]], type = 'box') %>%
+          layout(title = "Read Quality Data")
       })
       output$histogram <-renderPlotly({
         plot_ly(x = match_scores, type = 'histogram')
