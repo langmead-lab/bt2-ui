@@ -1,5 +1,6 @@
 library(shinydashboard)
 library(shinyjs)
+library(plotly)
 
 visuals_tab <- fluidRow(column(
   width = 12,
@@ -18,9 +19,9 @@ visuals_tab <- fluidRow(column(
     ),
     column(
       width = 6,
-      div(id = "fileInput",
+      div(id = "visualSamFile",
       fileInput(
-        "sam File",
+        "samFile",
         label = NULL,
         placeholder = "Select sam File",
         accept = c(
@@ -31,7 +32,7 @@ visuals_tab <- fluidRow(column(
       )
     )
   ),
-  actionButton("visualSumbit", label = "Submit")
+  actionButton("visualSubmit", label = "Submit")
 ),
   box(
     width = NULL,
@@ -45,5 +46,13 @@ visuals_tab <- fluidRow(column(
         )
       )
     )
-  )
+  ),
+box(
+  width = NULL,
+  textOutput("test"),
+  textOutput("test2"),
+  plotlyOutput("histogram"),
+  plotOutput("boxplot"),
+  plotlyOutput("pieplot")
+)
 ))

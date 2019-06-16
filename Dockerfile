@@ -13,7 +13,7 @@ RUN git clone https://github.com/BenLangmead/bowtie.git /tmp/bowtie \
         && mkdir -p /software/bowtie \
         && cp /tmp/bowtie/bowtie-align-s /tmp/bowtie/bowtie /software/bowtie
 
-RUN Rscript -e "install.packages(c('shinyFeedback', 'devtools', 'dplyr', 'readr', 'shinyjs', 'rclipboard', 'processx', 'reticulate', 'shinyBS', 'digest', 'rintrojs'), repos='https://cran.rstudio.com/')" \
+RUN Rscript -e "install.packages(c('shinyFeedback', 'devtools', 'dplyr', 'readr', 'shinyjs', 'rclipboard', 'processx', 'reticulate', 'shinyBS', 'digest', 'rintrojs', 'plotly'), repos='https://cran.rstudio.com/')" \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 RUN Rscript -e "install.packages('devtools'); devtools::install_github('rstudio/shinydashboard')"

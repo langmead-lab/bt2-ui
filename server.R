@@ -20,6 +20,7 @@ library(magrittr)
 library(digest)
 library(shinyBS)
 library(dplyr)
+library(plotly)
 
 function(input, output, session) {
   crispr_sam_tab_exists <- FALSE
@@ -1265,4 +1266,31 @@ function(input, output, session) {
       removeTab("bowtie2tabs", "Help", session = session)
     })
   }
+  
+  ###VISUALS
+  observeEvent(input$visualSubmit, {
+     if (is.null(input$samFile)) {
+        return(NULL)
+     }
+    else {
+      source_python("parser.py")
+      graph_data <- parse(input$samFile$datapath)
+      
+      pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
+      pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+      match_scores <- graph_data[[5]]
+      #output$test <- renderText({match_scores})
+      output$boxplot <-renderPlot({
+        plot(rnorm(60))
+      })
+      output$histogram <-renderPlotly({
+        plot_ly(x = graph_data[[5]], type = 'histogram')
+      })
+      output$pieplot <- renderPlotly({
+        plot_ly(labels = pie_labels, values = pie_data, type = 'pie')
+      })
+      sI <- sessionInfo()
+      print(sI, RNG = TRUE, locale = FALSE)
+    }
+  })
 }
