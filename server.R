@@ -1275,11 +1275,15 @@ function(input, output, session) {
     else {
       source_python("parser.py")
       graph_data <- parse(input$samFile$datapath)
-      
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+      read_quality <- graph_data[[4]]
+      read_quality_test <- read_quality[[1]]
       match_scores <- graph_data[[5]]
-      #output$test <- renderText({match_scores})
+      output$test <- renderText({read_quality_test})
+      #source_python("graph_util.py")
+      #read_quality_converter(read_quality)
+      #output$test2 <- renderText({read_quality})
       output$boxplot <-renderPlot({
         plot(rnorm(60))
       })
@@ -1289,8 +1293,6 @@ function(input, output, session) {
       output$pieplot <- renderPlotly({
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie')
       })
-      sI <- sessionInfo()
-      print(sI, RNG = TRUE, locale = FALSE)
     }
   })
 }
