@@ -1279,17 +1279,24 @@ function(input, output, session) {
       match_scores <- graph_data[[5]]
       read_quality <- graph_data[[4]]
 
-      output$test2 <- renderText({typeof(read_quality[[1]])})
+      boxplot <- plot_ly(type = 'box')
+      pos <- 1
+      for (i in read_quality) {
+        boxplot <- add_trace(boxplot, y = i, name = pos)
+        pos <- pos + 1
+      }
 
       output$test <-renderPlotly({
-        plot_ly(x = read_quality[[1]], type = 'box') %>%
-          layout(title = "Read Quality Data")
+        boxplot %>%
+        layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
       })
       output$histogram <-renderPlotly({
-        plot_ly(x = match_scores, type = 'histogram')
+        plot_ly(x = match_scores, type = 'histogram') %>%
+          layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
       })
       output$pieplot <- renderPlotly({
-        plot_ly(labels = pie_labels, values = pie_data, type = 'pie')
+        plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
+          layout(title = "Matched vs Unmatched Reads")
       })
     }
   })
