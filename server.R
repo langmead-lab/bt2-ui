@@ -1297,7 +1297,7 @@ function(input, output, session) {
       })
       output$pieplot <- renderPlotly({
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
-          layout(title = "Matched vs Unmatched Reads")
+          layout(title = "Matched Reads vs Unmatched Reads")
       })
     }
   })
