@@ -1284,7 +1284,7 @@ function(input, output, session) {
       boxplot <- plot_ly(type = 'box')
       pos <- 1
       for (i in read_quality) {
-        boxplot <- add_trace(boxplot, y = i, name = pos)
+        boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
         pos <- pos + 1
       }
 
@@ -1298,8 +1298,15 @@ function(input, output, session) {
       })
       output$pieplot <- renderPlotly({
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
-          layout(title = "Matched vs Unmatched Reads")
+          layout(title = "Matched Reads vs Unmatched Reads")
       })
     }
+  })
+  observeEvent(input$visualAccession, {
+      query <- "-u 10000 --src-acc"
+      out <-
+        submit_query(query, aligner = "bowtie2", index = input$runAccession, upto = 10000)
+      showNotification(out
+        )
   })
 }

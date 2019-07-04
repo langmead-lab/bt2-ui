@@ -34,6 +34,30 @@ visuals_tab <- fluidRow(column(
   ),
   actionButton("visualSubmit", label = "Submit")
 ),
+box(
+  width = NULL,
+  solidHeader = TRUE,
+  fluidRow(column(
+    width = 6,
+    div(id = "selectSequenceReadArchive",
+      selectizeInput(
+        "index4",
+        label = NULL,
+        options = list(placeholder = "Select Run Accession"),
+        choices = NULL
+      ))
+  ),
+  column(
+    width = 6,
+    div(id = "runAccession",
+    textInput(
+      "runAccession",
+      label = NULL,
+      placeholder = "Select Run Accession ID"
+    ))
+  ),
+actionButton("visualAccession", label = "Kowalski Analysis")
+),
   box(
     width = NULL,
     tabsetPanel(id = "visualtabs",
@@ -56,4 +80,4 @@ box(
   br(),
   plotlyOutput("pieplot")
 )
-))
+)))
