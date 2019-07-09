@@ -8,7 +8,7 @@ visuals_tab <- fluidRow(column(
     width = NULL,
     solidHeader = TRUE,
     fluidRow(column(
-      width = 6,
+      width = 4,
       div(id = "selectVisualIndex",
         selectizeInput(
           "index3",
@@ -18,19 +18,24 @@ visuals_tab <- fluidRow(column(
         ))
     ),
     column(
-      width = 6,
-      div(id = "visualSamFile",
-      fileInput(
-        "samFile",
-        label = NULL,
-        placeholder = "Select sam File",
-        accept = c(
-          ".sam"
-        ),
-        multiple = FALSE
-      )
-      )
-    )
+      width = 4,
+      div(id = "selectSequenceReadArchive",
+        selectizeInput(
+          "index4",
+          label = NULL,
+          options = list(placeholder = "Select Run Accession"),
+          choices = NULL
+        ))
+    ),
+    column(
+      width = 4,
+      div(id = "enterNumberOfReads",
+        numericInput(
+          "readNumber",
+          label = NULL,
+          value = 10000
+        )
+    ))
   ),
   actionButton("visualSubmit", label = "Submit")
 ),
