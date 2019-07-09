@@ -73,7 +73,7 @@ actionButton("visualAccession", label = "Kowalski Analysis")
   ),
 box(
   width = NULL,
-  textOutput("noFile"),
+  textOutput("try"),
   plotlyOutput("histogram"),
   br(),
   plotlyOutput("boxplot"),

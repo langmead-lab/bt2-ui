@@ -1303,10 +1303,12 @@ function(input, output, session) {
     }
   })
   observeEvent(input$visualAccession, {
-      query <- "-u 10000 --src-acc"
+      query <- "--src-acc"
       out <-
         submit_query(query, aligner = "bowtie2", index = input$runAccession, upto = 10000)
-      showNotification(out
-        )
+      output$try <- renderText({
+        out$stdout
+        out$stderr
+        })
   })
 }
