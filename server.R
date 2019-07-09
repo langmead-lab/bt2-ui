@@ -1313,7 +1313,7 @@ function(input, output, session) {
 
   #THIS MIGHT NOT BE USEFUL ANYMORE  BELOW
   observeEvent(input$visualAccession, {
-      query <- paste("--sra-acc ", input$index4, " -S")
+      query <- paste("--sra-acc ", input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", index = input$index3, upto = input$readNumber)
       output$try <- renderText({
@@ -1324,7 +1324,7 @@ function(input, output, session) {
   #THIS MIGHT NOT BE USFUL ANYMORE ABOVE
 
   observeEvent(input$visualSubmit, {
-      query <- paste("--sra-acc ", input$index4)
+      query <- paste("--sra-acc ", input$index4, " -S")
       out <-
         submit_query(query, aligner = "bowtie2", index = input$index3, upto = as.integer(input$readNumber))
       output$try <- renderText({
