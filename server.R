@@ -1269,9 +1269,10 @@ function(input, output, session) {
 
   ###VISUALS
   observeEvent(input$visualSubmit, {
-     if (is.null(input$samFile)) {
-        return(NULL)
-     }
+    if (is.null(input$samFile)) {
+      output$noFile <- renderText("Please enter a file")
+      return(NULL)
+    }  
     else {
       source_python("graph_util.py")
       graph_data <- parse(input$samFile$datapath)
@@ -1287,7 +1288,7 @@ function(input, output, session) {
         pos <- pos + 1
       }
 
-      output$test <-renderPlotly({
+      output$boxplot <-renderPlotly({
         boxplot %>%
         layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
       })
@@ -1302,10 +1303,12 @@ function(input, output, session) {
     }
   })
   observeEvent(input$visualAccession, {
-      query <- "-u 10000 --src-acc"
+      query <- "--src-acc"
       out <-
         submit_query(query, aligner = "bowtie2", index = input$runAccession, upto = 10000)
-      showNotification(out
-        )
+      output$try <- renderText({
+        out$stdout
+        out$stderr
+        })
   })
 }

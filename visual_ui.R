@@ -73,9 +73,10 @@ actionButton("visualAccession", label = "Kowalski Analysis")
   ),
 box(
   width = NULL,
+  textOutput("try"),
   plotlyOutput("histogram"),
   br(),
-  plotlyOutput("test"),
+  plotlyOutput("boxplot"),
   br(),
   plotlyOutput("pieplot")
 )
