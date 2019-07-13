@@ -1209,10 +1209,15 @@ function(input, output, session) {
       if (index != "") {
         query <- str_replace(query, index, "genome")
       }
-
+      
       argv <- str_split(query, "\\s+")[[1]]
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
-      print(argv)
+      output$try2 <- renderText({
+        argv
+      })
+      output$try3 <- renderText({
+        BOWTIE2_INDEXES
+      })
       run(
         bin_path,
         argv,
@@ -1324,19 +1329,20 @@ function(input, output, session) {
   #THIS MIGHT NOT BE USFUL ANYMORE ABOVE
 
   observeEvent(input$visualSubmit, {
-      query <- paste("--sra-acc ERR194146")
-      print("testing logging")
+      query <- paste("-x genome --sra-acc ERR194146")
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-      output$try2 <- renderText({
-        input$index3
-      })
-      output$try3 <- renderText({
-        input$index4
-      })
+      outfile <- tempfile("data")
+      write(uiOutput("bt2_output"), file = outfile)
+      insertTab(
+        inputId = "bowtie2tabs",
+        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+                 uiOutput("bt2_output")),
+        target = "Welcome",
+        select = TRUE
+      )
       output$try <- renderText({
         out$stdout
-        out$stderr
         })
   })
 }
