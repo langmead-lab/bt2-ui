@@ -1209,7 +1209,7 @@ function(input, output, session) {
       if (index != "") {
         query <- str_replace(query, index, "genome")
       }
-      
+
       argv <- str_split(query, "\\s+")[[1]]
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
       output$try2 <- renderText({
@@ -1332,17 +1332,52 @@ function(input, output, session) {
       query <- paste("-x genome --sra-acc ERR194146")
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-      outfile <- tempfile("data")
-      write(uiOutput("bt2_output"), file = outfile)
-      insertTab(
-        inputId = "bowtie2tabs",
-        tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
-                 uiOutput("bt2_output")),
-        target = "Welcome",
-        select = TRUE
-      )
+      # outfile <- tempfile("data")
+      # write(uiOutput("bt2_output"), file = outfile)
+      # insertTab(
+      #   inputId = "bowtie2tabs",
+      #   tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
+      #            uiOutput("bt2_output")),
+      #   target = "Welcome",
+      #   select = TRUE
+      # )
+      # output$try <- renderText({
+      #   out$stdout
+      #   })
+
+
+
+      source_python("graph_util.py")
+
+      line <- testSplit(out$stdout)
       output$try <- renderText({
         out$stdout
         })
+      # graph_data <- parse(out$stdout)
+      # pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
+      # pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+      # match_scores <- graph_data[[5]]
+      # read_quality <- graph_data[[4]]
+      #
+      # boxplot <- plot_ly(type = 'box')
+      # pos <- 1
+      # for (i in read_quality) {
+      #   boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+      #   pos <- pos + 1
+      # }
+      #
+      # output$boxplot <-renderPlotly({
+      #   boxplot %>%
+      #   layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+      # })
+      # output$histogram <-renderPlotly({
+      #   plot_ly(x = match_scores, type = 'histogram') %>%
+      #     layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
+      # })
+      # output$pieplot <- renderPlotly({
+      #   plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
+      #     layout(title = "Matched Reads vs Unmatched Reads")
+      # })
+
   })
 }
