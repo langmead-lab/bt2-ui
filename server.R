@@ -1345,8 +1345,6 @@ function(input, output, session) {
       #   out$stdout
       #   })
 
-
-
       source_python("graph_util.py")
 
       line <- testSplit(out$stdout)
@@ -1378,6 +1376,5 @@ function(input, output, session) {
       #   plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
       #     layout(title = "Matched Reads vs Unmatched Reads")
       # })
-
   })
 }
