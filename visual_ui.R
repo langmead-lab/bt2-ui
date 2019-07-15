@@ -1,6 +1,7 @@
 library(shinydashboard)
 library(shinyjs)
 library(plotly)
+library(shinycssloaders)
 
 visuals_tab <- fluidRow(column(
   width = 12,
@@ -20,12 +21,13 @@ visuals_tab <- fluidRow(column(
     column(
       width = 4,
       div(id = "selectSequenceReadArchive",
-          selectizeInput(
-            "index4",
-            label = NULL,
-            options = list(placeholder = "Select Run Accession"),
-            choices = NULL
-          ))
+          # selectizeInput(
+          #   "index4",
+          #   label = NULL,
+          #   options = list(placeholder = "Select Run Accession"),
+          #   choices = NULL)
+          textInput("index4", "Sequence Read Archive", "")
+          )
     ),
     column(
       width = 4,
@@ -60,10 +62,11 @@ visuals_tab <- fluidRow(column(
       textOutput("try"),
       textOutput("try2"),
       textOutput("try3"),
-      plotlyOutput("histogram"),
+      withSpinner(plotlyOutput("histogram")),
       br(),
-      plotlyOutput("boxplot"),
+      withSpinner(plotlyOutput("boxplot")),
       br(),
-      plotlyOutput("pieplot")
+      downloadButton("bt2DownloadSAM2", "Download"),
+      withSpinner(plotlyOutput("pieplot"))
     )
   )))

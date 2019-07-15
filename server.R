@@ -392,14 +392,14 @@ function(input, output, session) {
   })
 
   observe({
-    choices <- list("ERR194146", "SRX6380199")
-    updateSelectizeInput(
-      session,
-      "index4",
-      server = TRUE,
-      selected = "ERR194146",
-      choices = choices
-    )
+    # choices <- list("ERR194146", "SRX6380199", "ERX3440106", "ERX3370972", "SRX6091240")
+    # updateSelectizeInput(
+    #   session,
+    #   "index4",
+    #   server = TRUE,
+    #   selected = "ERR194146",
+    #   choices = choices
+    # )
   })
 
   observeEvent(c(input$mate1, input$mate1_sequence), {
@@ -717,6 +717,17 @@ function(input, output, session) {
         format(Sys.time(), "%m%d%Y%H%M%S"),
         ".sam",
         sep = "")
+    },
+    content = function(file) {
+      write_file(rvs$bt2_sam, file)
+    }
+  )
+  output$bt2DownloadSAM2 <- downloadHandler(
+    filename = function() {
+      paste("bowtie2-",
+            format(Sys.time(), "%m%d%Y%H%M%S"),
+            ".sam",
+            sep = "")
     },
     content = function(file) {
       write_file(rvs$bt2_sam, file)
@@ -1316,30 +1327,16 @@ function(input, output, session) {
   #   }
   # }
 
-  #THIS MIGHT NOT BE USEFUL ANYMORE  BELOW
-  # observeEvent(input$visualAccession, {
-  #     query <- paste("--sra-acc ", input$index4)
-  #     out <-
-  #       submit_query(query, aligner = "bowtie2", index = input$index3, upto = input$readNumber)
-  #     output$try <- renderText({
-  #       out$stdout
-  #       out$stderr
-  #       })
-  # })
-  #THIS MIGHT NOT BE USFUL ANYMORE ABOVE
-
   observeEvent(input$visualSubmit, {
     output$try <- renderText({
       "Please wait while we generate your plots"
       })
 
-      query <- paste("-x genome --sra-acc ", input$index4, "-S eg1.sam")
-      #query <- paste(" -x ", " genome" , " --sra-acc ", input$input4)
-
+      query <- paste("-x genome --sra-acc ", input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-      outfile <- tempfile("data")
-      write(uiOutput("bt2_output"), file = outfile)
+      # outfile <- tempfile("data")
+      # write(uiOutput("bt2_output"), file = outfile)
       # insertTab(
       #   inputId = "bowtie2tabs",
       #   tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
@@ -1347,39 +1344,36 @@ function(input, output, session) {
       #   target = "Welcome",
       #   select = TRUE
       # )
+      rvs$bt2_sam <- out$stdout
       # output$try <- renderText({
-      #   out$stdout
-      #   })
-
+      #   rvs$bt2_sam
+      # })
+      # numLines <- as.integer(as.integer(input$readNumber) - 1)
       source_python("graph_util.py")
+      graph_data <- parseString(rvs$bt2_sam)
+      pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
+      pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+      match_scores <- graph_data[[5]]
+      read_quality <- graph_data[[4]]
 
-      output$try <- renderText({
-        out$stdout
-        })
-      graph_data <- parseFile("data")
-      # pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      # pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-      # match_scores <- graph_data[[5]]
-      # read_quality <- graph_data[[4]]
-      #
-      # boxplot <- plot_ly(type = 'box')
-      # pos <- 1
-      # for (i in read_quality) {
-      #   boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-      #   pos <- pos + 1
-      # }
-      #
-      # output$boxplot <-renderPlotly({
-      #   boxplot %>%
-      #   layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-      # })
-      # output$histogram <-renderPlotly({
-      #   plot_ly(x = match_scores, type = 'histogram') %>%
-      #     layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-      # })
-      # output$pieplot <- renderPlotly({
-      #   plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
-      #     layout(title = "Matched Reads vs Unmatched Reads")
-      # })
+      boxplot <- plot_ly(type = 'box')
+      pos <- 1
+      for (i in read_quality) {
+        boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+        pos <- pos + 1
+      }
+
+      output$boxplot <-renderPlotly({
+        boxplot %>%
+        layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+      })
+      output$histogram <-renderPlotly({
+        plot_ly(x = match_scores, type = 'histogram') %>%
+          layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
+      })
+      output$pieplot <- renderPlotly({
+        plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
+          layout(title = "Matched Reads vs Unmatched Reads")
+      })
   })
 }

@@ -62,7 +62,7 @@ def make_data_for_box_plot(read_quality):
         data.append(read_quality[i])
     return data
 
-def parse(txt):
+def parseString(txt):
     readnumber = re.compile('[r]+\d+')
     line_spliter = re.compile('\t+')
     colon_spliter = re.compile(':')
@@ -78,7 +78,7 @@ def parse(txt):
     lines = txt.splitlines()
 
     #Itterating though everyline
-    for i in range(len(lines)):
+    for i in range(len(lines) - 1):
         get_match_score = True
         #Splitting the lines into whitespace
         subline = line_spliter.split(lines[i])
