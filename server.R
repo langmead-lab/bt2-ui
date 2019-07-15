@@ -1329,11 +1329,17 @@ function(input, output, session) {
   #THIS MIGHT NOT BE USFUL ANYMORE ABOVE
 
   observeEvent(input$visualSubmit, {
-      query <- paste("-x genome --sra-acc ERR194146")
+    output$try <- renderText({
+      "Please wait while we generate your plots"
+      })
+
+      query <- paste("-x genome --sra-acc ", input$index4, "-S eg1.sam")
+      #query <- paste(" -x ", " genome" , " --sra-acc ", input$input4)
+
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-      # outfile <- tempfile("data")
-      # write(uiOutput("bt2_output"), file = outfile)
+      outfile <- tempfile("data")
+      write(uiOutput("bt2_output"), file = outfile)
       # insertTab(
       #   inputId = "bowtie2tabs",
       #   tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
@@ -1349,11 +1355,10 @@ function(input, output, session) {
 
       source_python("graph_util.py")
 
-      line <- testSplit(out$stdout)
       output$try <- renderText({
         out$stdout
         })
-      # graph_data <- parse(out$stdout)
+      graph_data <- parseFile("data")
       # pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       # pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       # match_scores <- graph_data[[5]]
