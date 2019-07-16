@@ -84,13 +84,15 @@ def parseString(txt):
             get_match_score = True
             #Splitting the lines into whitespace
             subline = line_spliter.split(lines[i])
-            if (int(subline[1]) % 2 == 0):
+
+
+            if ((int(subline[1]) & 4 == 1):
                 unmatched_reads += 1
                 get_match_score = False
-            elif ((int(subline[1]) >> 4) % 2 == 0):
-                forward_reads += 1
-            else:
+            elif (int(subline[1]) & 16 == 1):
                 reverse_reads += 1
+            else:
+                forward_reads += 1
 
             for j in range(len(subline[10])):
                 while(len(read_quality) < len(subline[10])):
