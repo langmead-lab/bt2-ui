@@ -86,10 +86,10 @@ def parseString(txt):
             subline = line_spliter.split(lines[i])
 
 
-            if ((int(subline[1]) & 4 == 1):
+            if (int(subline[1]) & 4 == 4):
                 unmatched_reads += 1
                 get_match_score = False
-            elif (int(subline[1]) & 16 == 1):
+            elif (int(subline[1]) & 16 == 16):
                 reverse_reads += 1
             else:
                 forward_reads += 1
