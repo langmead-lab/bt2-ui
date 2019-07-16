@@ -21,6 +21,7 @@ library(digest)
 library(shinyBS)
 library(dplyr)
 library(plotly)
+library(shinycssloaders)
 
 function(input, output, session) {
   crispr_sam_tab_exists <- FALSE
@@ -30,6 +31,7 @@ function(input, output, session) {
 
   rvs <- reactiveValues()
   requiredFields <- c()
+
 
   source("tooltips.R", local = TRUE)
 
@@ -1223,12 +1225,6 @@ function(input, output, session) {
 
       argv <- str_split(query, "\\s+")[[1]]
       BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
-      output$try2 <- renderText({
-        argv
-      })
-      output$try3 <- renderText({
-        BOWTIE2_INDEXES
-      })
       run(
         bin_path,
         argv,
@@ -1328,29 +1324,27 @@ function(input, output, session) {
   # }
 
   observeEvent(input$visualSubmit, {
-    output$try <- renderText({
-      "Please wait while we generate your plots"
-      })
-
+    withProgress(message = "Making plots", value = 0, {
+      n <- 4
+      incProgress(1/n, "Running bowtie2")
       query <- paste("-x genome --sra-acc ", input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-      # outfile <- tempfile("data")
-      # write(uiOutput("bt2_output"), file = outfile)
-      # insertTab(
-      #   inputId = "bowtie2tabs",
-      #   tabPanel("SAM Output", style = "overflow-y:scroll; max-height: 600px;",
-      #            uiOutput("bt2_output")),
-      #   target = "Welcome",
-      #   select = TRUE
-      # )
+
+      if (out$stdout == "") {
+        output$displayError <- renderText({
+          paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
+        })
+      } else {
+        output$displayError <- renderText({
+          ""
+        })
+      }
       rvs$bt2_sam <- out$stdout
-      # output$try <- renderText({
-      #   rvs$bt2_sam
-      # })
-      # numLines <- as.integer(as.integer(input$readNumber) - 1)
+      incProgress(1/n, "Parcing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
+
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       match_scores <- graph_data[[5]]
@@ -1362,7 +1356,7 @@ function(input, output, session) {
         boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
         pos <- pos + 1
       }
-
+      incProgress(1/n, "Generating plots")
       output$boxplot <-renderPlotly({
         boxplot %>%
         layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
@@ -1375,5 +1369,6 @@ function(input, output, session) {
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
+    })
   })
 }

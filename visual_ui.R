@@ -13,7 +13,7 @@ visuals_tab <- fluidRow(column(
       div(id = "selectVisualIndex",
           selectizeInput(
             "index3",
-            label = NULL,
+            label = "Bowtie2 Index to be used",
             options = list(placeholder = "Select Index"),
             choices = NULL
           ))
@@ -34,7 +34,7 @@ visuals_tab <- fluidRow(column(
       div(id = "enterNumberOfReads",
           numericInput(
             "readNumber",
-            label = NULL,
+            label = "Number of Read to be Processed",
             value = 10000
           )
       ))
@@ -58,15 +58,14 @@ visuals_tab <- fluidRow(column(
       )
     ),
     box(
+      id = "visual_graphs",
       width = NULL,
-      textOutput("try"),
-      textOutput("try2"),
-      textOutput("try3"),
-      withSpinner(plotlyOutput("histogram")),
+      textOutput("displayError"),
+      plotlyOutput("histogram"),
       br(),
-      withSpinner(plotlyOutput("boxplot")),
+      plotlyOutput("boxplot"),
       br(),
-      downloadButton("bt2DownloadSAM2", "Download"),
-      withSpinner(plotlyOutput("pieplot"))
+      plotlyOutput("pieplot"),
+      downloadButton("bt2DownloadSAM2", "Download Sam File")
     )
   )))
