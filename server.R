@@ -1286,43 +1286,7 @@ function(input, output, session) {
       removeTab("bowtie2tabs", "Help", session = session)
     })
   }
-
-  ###VISUALS
-  # observeEvent(input$visualSubmit, {
-  #   if (is.null(input$samFile)) {
-  #     output$noFile <- renderText("Please enter a file")
-  #     return(NULL)
-  #   }
-  #   else {
-  #     source_python("graph_util.py")
-  #     graph_data <- parse(input$samFile$datapath)
-  #     pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-  #     pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-  #     match_scores <- graph_data[[5]]
-  #     read_quality <- graph_data[[4]]
-  #
-  #     boxplot <- plot_ly(type = 'box')
-  #     pos <- 1
-  #     for (i in read_quality) {
-  #       boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-  #       pos <- pos + 1
-  #     }
-  #
-  #     output$boxplot <-renderPlotly({
-  #       boxplot %>%
-  #       layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-  #     })
-  #     output$histogram <-renderPlotly({
-  #       plot_ly(x = match_scores, type = 'histogram') %>%
-  #         layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-  #     })
-  #     output$pieplot <- renderPlotly({
-  #       plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
-  #         layout(title = "Matched Reads vs Unmatched Reads")
-  #     })
-  #   }
-  # }
-
+  ##VISUALS
   observeEvent(input$visualSubmit, {
     withProgress(message = "Making plots", value = 0, {
       n <- 4
@@ -1341,7 +1305,7 @@ function(input, output, session) {
         })
       }
       rvs$bt2_sam <- out$stdout
-      incProgress(1/n, "Parcing results")
+      incProgress(1/n, "Parsing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
 

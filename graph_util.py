@@ -79,7 +79,7 @@ def parseString(txt):
     lines = spliter.split(txt)
 
     #Itterating though everyline
-    for i in range(len(lines) - 1):
+    for i in range(len(lines)):
         try:
             get_match_score = True
             #Splitting the lines into whitespace
