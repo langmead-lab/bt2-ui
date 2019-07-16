@@ -21,11 +21,6 @@ visuals_tab <- fluidRow(column(
     column(
       width = 4,
       div(id = "selectSequenceReadArchive",
-          # selectizeInput(
-          #   "index4",
-          #   label = NULL,
-          #   options = list(placeholder = "Select Run Accession"),
-          #   choices = NULL)
           textInput("index4", "Sequence Read Archive", "")
           )
     ),

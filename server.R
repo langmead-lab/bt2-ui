@@ -393,17 +393,6 @@ function(input, output, session) {
     )
   })
 
-  observe({
-    # choices <- list("ERR194146", "SRX6380199", "ERX3440106", "ERX3370972", "SRX6091240")
-    # updateSelectizeInput(
-    #   session,
-    #   "index4",
-    #   server = TRUE,
-    #   selected = "ERR194146",
-    #   choices = choices
-    # )
-  })
-
   observeEvent(c(input$mate1, input$mate1_sequence), {
     if (input$readsAreSequences) {
       update_command_line(
