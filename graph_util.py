@@ -70,7 +70,9 @@ def parseString(txt):
     forward_reads = 0
     reverse_reads = 0
     unmatched_reads = 0
-    read_quality = [[]]
+    read_quality_unpaired = [[]]
+    read_quality_first = [[]]
+    read_quality_second = [[]]
     match_scores = []
 
     #TODO throw an error/ warning if the readSize is greater than the number
@@ -85,7 +87,6 @@ def parseString(txt):
             #Splitting the lines into whitespace
             subline = line_spliter.split(lines[i])
 
-
             if (int(subline[1]) & 4 == 4):
                 unmatched_reads += 1
                 get_match_score = False
@@ -93,18 +94,31 @@ def parseString(txt):
                 reverse_reads += 1
             else:
                 forward_reads += 1
-
-            for j in range(len(subline[10])):
-                while(len(read_quality) < len(subline[10])):
-                    read_quality.append([])
-                read_quality[j].append(subline[10][j])
+            if(int(subline[1]) & 2 == 2): #read is paired
+                if(int(subline[1]) & 64 == 64):
+                  for j in range(len(subline[10])):
+                      while(len(read_quality_first) < len(subline[10])):
+                          read_quality_first.append([])
+                      read_quality_first[j].append(subline[10][j])
+                elif(int(subline[1]) & 128 == 128):
+                  for j in range(len(subline[10])):
+                      while(len(read_quality_second) < len(subline[10])):
+                          read_quality_second.append([])
+                      read_quality_second[j].append(subline[10][j])
+            else: #read is unpaired
+              for j in range(len(subline[10])):
+                  while(len(read_quality_unpaired) < len(subline[10])):
+                      read_quality_unpaired.append([])
+                  read_quality_unpaired[j].append(subline[10][j])
 
             if (get_match_score):
                 match_scores.append(int(colon_spliter.split(subline[11])[2]))
         except:
             print("Invalid Line")
-    read_quality = read_quality_converter(read_quality)
-    return (forward_reads, reverse_reads, unmatched_reads, read_quality, match_scores)
+    read_quality_unpaired = read_quality_converter(read_quality_unpaired)
+    read_quality_first = read_quality_converter(read_quality_first)
+    read_quality_second = read_quality_converter(read_quality_second)
+    return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores)
 
 
 def matched_vs_unmatched_pie_chart(forward_reads, reverse_reads, unmatched_reads):
