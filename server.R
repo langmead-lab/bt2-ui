@@ -1306,10 +1306,6 @@ function(input, output, session) {
       read_quality_first <- graph_data[[5]]
       read_quality_second <- graph_data[[6]]
       
-      output$displayError <- renderText({
-        length(read_quality_unpaired)
-      })
-      
       if(length(read_quality_unpaired) > 1) {
         boxplot_unpaired <- plot_ly(type = 'box')
         pos <- 1
