@@ -1301,45 +1301,72 @@ function(input, output, session) {
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       match_scores <- graph_data[[7]]
+      tlen <- graph_data[[8]]
       read_quality_unpaired <- graph_data[[4]]
       read_quality_first <- graph_data[[5]]
       read_quality_second <- graph_data[[6]]
-
-      boxplot_unpaired <- plot_ly(type = 'box')
-      pos <- 1
-      for (i in read_quality_unpaired) {
-        boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-        pos <- pos + 1
+      
+      output$displayError <- renderText({
+        length(read_quality_unpaired)
+      })
+      
+      if(length(read_quality_unpaired) > 1) {
+        boxplot_unpaired <- plot_ly(type = 'box')
+        pos <- 1
+        for (i in read_quality_unpaired) {
+          boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+          pos <- pos + 1
+        }
       }
-      boxplot_first <- plot_ly(type = 'box')
-      pos <- 1
-      for (i in read_quality_first) {
-        boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-        pos <- pos + 1
+      
+      if(length(read_quality_first) > 1) {
+        boxplot_first <- plot_ly(type = 'box')
+        pos <- 1
+        for (i in read_quality_first) {
+          boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+          pos <- pos + 1
+        }
       }
-      boxplot_second <- plot_ly(type = 'box')
-      pos <- 1
-      for (i in read_quality_second) {
-        boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-        pos <- pos + 1
+      
+      if(length(read_quality_second) > 1) {
+        boxplot_second <- plot_ly(type = 'box')
+        pos <- 1
+        for (i in read_quality_second) {
+          boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+          pos <- pos + 1
+        }
       }
+      
       incProgress(1/n, "Generating plots")
-      output$boxplot_unpaired <-renderPlotly({
-        boxplot_unpaired %>%
-        layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-      })
-      output$boxplot_first <-renderPlotly({
-        boxplot_first %>%
-          layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-      })
-      output$boxplot_second <-renderPlotly({
-        boxplot_second %>%
-          layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-      })
-      output$histogram <-renderPlotly({
+      
+      if(length(read_quality_unpaired) > 1) {
+        output$boxplot_unpaired <-renderPlotly({
+          boxplot_unpaired %>%
+          layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        })
+      }
+      if(length(read_quality_first) > 1) {
+        output$boxplot_first <-renderPlotly({
+          boxplot_first %>%
+            layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        })
+      }
+      if(length(read_quality_second) > 1) {
+        output$boxplot_second <-renderPlotly({
+          boxplot_second %>%
+            layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        })
+      }
+      output$match_score_histogram <-renderPlotly({
         plot_ly(x = match_scores, type = 'histogram') %>%
           layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
       })
+      if(length(tlen) != 0) {
+        output$tlen_histogram <-renderPlotly({
+          plot_ly(x = tlen, type = 'histogram') %>%
+            layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
+        })
+      }
       output$pieplot <- renderPlotly({
         plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")

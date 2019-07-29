@@ -70,6 +70,7 @@ def parseString(txt):
     forward_reads = 0
     reverse_reads = 0
     unmatched_reads = 0
+    tlen = []
     read_quality_unpaired = [[]]
     read_quality_first = [[]]
     read_quality_second = [[]]
@@ -100,6 +101,7 @@ def parseString(txt):
                       while(len(read_quality_first) < len(subline[10])):
                           read_quality_first.append([])
                       read_quality_first[j].append(subline[10][j])
+                      tlen.append(abs(int(subline[8])))
                 elif(int(subline[1]) & 128 == 128):
                   for j in range(len(subline[10])):
                       while(len(read_quality_second) < len(subline[10])):
@@ -118,7 +120,7 @@ def parseString(txt):
     read_quality_unpaired = read_quality_converter(read_quality_unpaired)
     read_quality_first = read_quality_converter(read_quality_first)
     read_quality_second = read_quality_converter(read_quality_second)
-    return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores)
+    return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores, tlen)
 
 
 def matched_vs_unmatched_pie_chart(forward_reads, reverse_reads, unmatched_reads):
