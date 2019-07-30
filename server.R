@@ -1297,10 +1297,6 @@ function(input, output, session) {
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
 
-      output$visual_update <- reactive({
-        TRUE
-      })
-      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
       rvs$accession <- isolate(input$index4)
       rvs$index <- isolate(input$index3)
       rvs$lines_read <- isolate(input$readNumber)
@@ -1325,10 +1321,6 @@ function(input, output, session) {
         }
       }
 
-      output$display_unpaired <- reactive({
-        length(rvs$read_quality_unpaired) > 1
-      })
-
       if(length(rvs$read_quality_first) > 1) {
         boxplot_first <- plot_ly(type = 'box')
         pos <- 1
@@ -1337,10 +1329,6 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-
-      output$display_first <- reactive({
-        length(rvs$read_quality_first) > 1
-      })
 
       if(length(rvs$read_quality_second) > 1) {
         boxplot_second <- plot_ly(type = 'box')
@@ -1351,9 +1339,28 @@ function(input, output, session) {
         }
       }
 
+      output$visual_update <- reactive({
+        TRUE
+      })
+      output$display_unpaired <- reactive({
+        (length(rvs$read_quality_unpaired) > 1)
+      })
+      output$display_first <- reactive({
+        (length(rvs$read_quality_first) > 1)
+      })
       output$display_second <- reactive({
         length(rvs$read_quality_second) > 1
       })
+      output$display_tlen <- reactive({
+        length(rvs$tlen) > 0
+      })
+
+      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_first", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_second", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
+
 
       incProgress(1/n, "Generating plots")
 
@@ -1386,10 +1393,6 @@ function(input, output, session) {
             layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
         })
       }
-
-      output$display_tlen <- reactive({
-        length(rvs$tlen) > 0
-      })
 
       output$pieplot <- renderPlotly({
         plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
@@ -1468,6 +1471,28 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
+
+      output$visual_update <- reactive({
+        TRUE
+      })
+      output$display_unpaired <- reactive({
+        (length(rvs$read_quality_unpaired) > 1)
+      })
+      output$display_first <- reactive({
+        (length(rvs$read_quality_first) > 1)
+      })
+      output$display_second <- reactive({
+        length(rvs$read_quality_second) > 1
+      })
+      output$display_tlen <- reactive({
+        length(rvs$tlen) > 0
+      })
+
+      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_first", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_second", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
 
       incProgress(1/n, "Generating plots")
 
