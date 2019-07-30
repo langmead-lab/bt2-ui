@@ -58,11 +58,12 @@ visuals_tab <- fluidRow(column(
       id = "visual_graphs",
       width = NULL,
       textOutput("displayError"),
-      plotlyOutput("histogram"),
-      br(),
-      plotlyOutput("boxplot"),
-      br(),
+      plotlyOutput("match_score_histogram"),
+      plotlyOutput("boxplot_unpaired"),
+      plotlyOutput("boxplot_first"),
+      plotlyOutput("boxplot_second"),
       plotlyOutput("pieplot"),
+      plotlyOutput("tlen_histogram"),
       downloadButton("bt2DownloadSAM2", "Download Sam File")
     )
   )))
