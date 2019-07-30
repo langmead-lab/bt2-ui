@@ -65,11 +65,16 @@ visuals_tab <- fluidRow(column(
       width = NULL,
       textOutput("displayError"),
       plotlyOutput("match_score_histogram"),
-      plotlyOutput("boxplot_unpaired"),
-      plotlyOutput("boxplot_first"),
-      plotlyOutput("boxplot_second"),
+      conditionalPanel(condition = "output.display_unpaired",
+        plotlyOutput("boxplot_unpaired")),
+      conditionalPanel(condition = "output.display_first",
+        plotlyOutput("boxplot_first")),
+      conditionalPanel(condition = "output.display_second",
+        plotlyOutput("boxplot_second")),
       plotlyOutput("pieplot"),
-      plotlyOutput("tlen_histogram"),
-      downloadButton("bt2DownloadSAM2", "Download Sam File")
+      conditionalPanel(condition = "output.display_tlen",
+        plotlyOutput("tlen_histogram")),
+      conditionalPanel(condition = "output.visual_update",
+        downloadButton("bt2DownloadSAM2", "Download Sam File"))
     )
   )))

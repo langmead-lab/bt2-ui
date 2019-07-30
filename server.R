@@ -1304,9 +1304,8 @@ function(input, output, session) {
       rvs$accession <- isolate(input$index4)
       rvs$index <- isolate(input$index3)
       rvs$lines_read <- isolate(input$readNumber)
-      rvs$lines_per_run <- isolate(input$readNumber)
       output$lines_processed <- renderText({
-        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", rvs$lines_per_run, " more?")
+        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
       })
       #isolate(output$lines_processed())
       rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
@@ -1326,6 +1325,10 @@ function(input, output, session) {
         }
       }
 
+      output$display_unpaired <- reactive({
+        length(rvs$read_quality_unpaired) > 1
+      })
+
       if(length(rvs$read_quality_first) > 1) {
         boxplot_first <- plot_ly(type = 'box')
         pos <- 1
@@ -1335,6 +1338,10 @@ function(input, output, session) {
         }
       }
 
+      output$display_first <- reactive({
+        length(rvs$read_quality_first) > 1
+      })
+
       if(length(rvs$read_quality_second) > 1) {
         boxplot_second <- plot_ly(type = 'box')
         pos <- 1
@@ -1343,6 +1350,10 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
+
+      output$display_second <- reactive({
+        length(rvs$read_quality_second) > 1
+      })
 
       incProgress(1/n, "Generating plots")
 
@@ -1369,12 +1380,17 @@ function(input, output, session) {
         plot_ly(x = rvs$match_scores, type = 'histogram') %>%
           layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
       })
-      if(length(rvs$tlen) != 0) {
+      if(length(rvs$tlen) > 0) {
         output$tlen_histogram <-renderPlotly({
           plot_ly(x = rvs$tlen, type = 'histogram') %>%
             layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
         })
       }
+
+      output$display_tlen <- reactive({
+        length(rvs$tlen) > 0
+      })
+
       output$pieplot <- renderPlotly({
         plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
@@ -1389,7 +1405,7 @@ function(input, output, session) {
       incProgress(1/n, "Running bowtie2")
       query <- paste(" --skip ", rvs$lines_read, " -x genome --sra-acc ", rvs$accession)
       out <-
-        submit_query(query, aligner = "bowtie2", upto = as.integer(rvs$lines_per_run), index = rvs$index)
+        submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = rvs$index)
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
@@ -1404,9 +1420,9 @@ function(input, output, session) {
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
 
-      rvs$lines_read <- rvs$lines_read + rvs$lines_per_run
+      rvs$lines_read <- rvs$lines_read + input$readNumber
       output$lines_processed <- renderText({
-        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", rvs$lines_per_run, " more?")
+        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
       })
 
       rvs$pie_data[[1]] <- rvs$pie_data[[1]] + graph_data[[1]]
