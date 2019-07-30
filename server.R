@@ -1278,12 +1278,12 @@ function(input, output, session) {
   ##VISUALS
   observeEvent(input$visualSubmit, {
     withProgress(message = "Making plots", value = 0, {
-      n <- 4
+      n <- 5
       incProgress(1/n, "Running bowtie2")
       query <- paste("-x genome --sra-acc ", input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
-
+      read_count <- toString(input$readNumber)
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
@@ -1299,13 +1299,17 @@ function(input, output, session) {
       graph_data <- parseString(rvs$bt2_sam)
 
       pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-      match_scores <- graph_data[[5]]
-      read_quality <- graph_data[[4]]
+      rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+      rvs$match_scores <- graph_data[[5]]
+      rvs$read_quality <- graph_data[[4]]
+      output$visual_update <- reactive({
+        TRUE
+      })
+      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
 
       boxplot <- plot_ly(type = 'box')
       pos <- 1
-      for (i in read_quality) {
+      for (i in rvs$read_quality) {
         boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
         pos <- pos + 1
       }
@@ -1315,13 +1319,14 @@ function(input, output, session) {
         layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
       })
       output$histogram <-renderPlotly({
-        plot_ly(x = match_scores, type = 'histogram') %>%
+        plot_ly(x = rvs$match_scores, type = 'histogram') %>%
           layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
       })
       output$pieplot <- renderPlotly({
-        plot_ly(labels = pie_labels, values = pie_data, type = 'pie') %>%
+        plot_ly(labels = pie_labels, values = rvs$pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
+      incProgress(1/n, "Finishing up")
     })
   })
 }

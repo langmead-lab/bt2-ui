@@ -34,7 +34,9 @@ visuals_tab <- fluidRow(column(
           )
       ))
     ),
-    actionButton("visualSubmit", label = "Submit")
+    actionButton("visualSubmit", label = "Submit"),
+    conditionalPanel(condition = "output.visual_update",
+      actionButton("visualUpdate", label = paste0("Next ", read_count," reads")))
   ),
   box(
     width = NULL,
