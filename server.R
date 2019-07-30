@@ -1298,29 +1298,20 @@ function(input, output, session) {
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
 
-      pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-<<<<<<< HEAD
-      rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-      rvs$match_scores <- graph_data[[5]]
-      rvs$read_quality <- graph_data[[4]]
       output$visual_update <- reactive({
         TRUE
       })
       outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
 
-      boxplot <- plot_ly(type = 'box')
-      pos <- 1
-      for (i in rvs$read_quality) {
-        boxplot <- add_trace(boxplot, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-        pos <- pos + 1
-=======
+
+      pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       match_scores <- graph_data[[7]]
       tlen <- graph_data[[8]]
       read_quality_unpaired <- graph_data[[4]]
       read_quality_first <- graph_data[[5]]
       read_quality_second <- graph_data[[6]]
-      
+
       if(length(read_quality_unpaired) > 1) {
         boxplot_unpaired <- plot_ly(type = 'box')
         pos <- 1
@@ -1329,7 +1320,7 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-      
+
       if(length(read_quality_first) > 1) {
         boxplot_first <- plot_ly(type = 'box')
         pos <- 1
@@ -1337,9 +1328,8 @@ function(input, output, session) {
           boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
           pos <- pos + 1
         }
->>>>>>> d3ec3cb23e7e98a0c39bbbcf575a2919ae13966b
       }
-      
+
       if(length(read_quality_second) > 1) {
         boxplot_second <- plot_ly(type = 'box')
         pos <- 1
@@ -1348,17 +1338,9 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-      
+
       incProgress(1/n, "Generating plots")
-<<<<<<< HEAD
-      output$boxplot <-renderPlotly({
-        boxplot %>%
-        layout(title = "Read Quality", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-      })
-      output$histogram <-renderPlotly({
-        plot_ly(x = rvs$match_scores, type = 'histogram') %>%
-=======
-      
+
       if(length(read_quality_unpaired) > 1) {
         output$boxplot_unpaired <-renderPlotly({
           boxplot_unpaired %>%
@@ -1379,7 +1361,6 @@ function(input, output, session) {
       }
       output$match_score_histogram <-renderPlotly({
         plot_ly(x = match_scores, type = 'histogram') %>%
->>>>>>> d3ec3cb23e7e98a0c39bbbcf575a2919ae13966b
           layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
       })
       if(length(tlen) != 0) {
@@ -1392,11 +1373,7 @@ function(input, output, session) {
         plot_ly(labels = pie_labels, values = rvs$pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
-<<<<<<< HEAD
-      incProgress(1/n, "Finishing up")
-=======
       incProgress(1/n, "Displaying plots")
->>>>>>> d3ec3cb23e7e98a0c39bbbcf575a2919ae13966b
     })
   })
 }
