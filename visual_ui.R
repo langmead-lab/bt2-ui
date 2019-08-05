@@ -76,6 +76,9 @@ visuals_tab <- fluidRow(column(
         conditionalPanel(condition = "output.display_tlen",
           plotlyOutput("tlen_histogram")),
         conditionalPanel(condition = "output.visual_update",
-          downloadButton("bt2DownloadSAM2", "Download Sam File"))
+          downloadButton("bt2DownloadSAM2", "Download Sam File")),
+        plotlyOutput("mapq_histogram"),
+        plotlyOutput("alignment_pieplot"),
+        textOutput("erroutput")
       ))
   )))

@@ -75,6 +75,7 @@ def parseString(txt):
     read_quality_first = [[]]
     read_quality_second = [[]]
     match_scores = []
+    mapq_scores = []
 
     #TODO throw an error/ warning if the readSize is greater than the number
     #of lines in the file.
@@ -115,12 +116,28 @@ def parseString(txt):
 
             if (get_match_score):
                 match_scores.append(int(colon_spliter.split(subline[11])[2]))
+                mapq_scores.append(int(subline[4]))
         except:
             print("Invalid Line")
     read_quality_unpaired = read_quality_converter(read_quality_unpaired)
     read_quality_first = read_quality_converter(read_quality_first)
     read_quality_second = read_quality_converter(read_quality_second)
-    return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores, tlen)
+    return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores, tlen, mapq_scores)
+
+def parseAlignemntSummary(txt):
+    spliter = re.compile('\n+')
+    line_spliter = re.compile('\s+')
+
+    lines = spliter.split(txt)
+    unaligned = int(line_spliter.split(lines[2])[1])
+    aligned = int(line_spliter.split(lines[3])[1])
+    multi_aligned = int(line_spliter.split(lines[4])[1])
+    return (unaligned, aligned, multi_aligned)
+
+
+
+
+
 
 
 def matched_vs_unmatched_pie_chart(forward_reads, reverse_reads, unmatched_reads):
