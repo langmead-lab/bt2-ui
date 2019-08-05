@@ -67,6 +67,16 @@ visuals_tab <- fluidPage(
             conditionalPanel(condition = "output.display_tlen",
                              plotlyOutput("tlen_histogram"))
           ),
+          tabPanel(
+            "Alignment Summary",
+            conditionalPanel(condition = "output.display_summary",
+                              plotlyOutput("alignment_pieplot"))
+          ),
+          tabPanel(
+            "MAPQ Scores",
+            conditionalPanel(condition = "output.display_mapq",
+                              plotlyOutput("mapq_histogram"))
+          ),
           conditionalPanel(condition = "output.visual_update",
                            downloadButton("bt2DownloadSAM2", "Download Sam File"))
         )

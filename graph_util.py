@@ -127,12 +127,14 @@ def parseString(txt):
 def parseAlignemntSummary(txt):
     spliter = re.compile('\n+')
     line_spliter = re.compile('\s+')
-
-    lines = spliter.split(txt)
-    unaligned = int(line_spliter.split(lines[2])[1])
-    aligned = int(line_spliter.split(lines[3])[1])
-    multi_aligned = int(line_spliter.split(lines[4])[1])
-    return (unaligned, aligned, multi_aligned)
+    try:
+        lines = spliter.split(txt)
+        unaligned = int(line_spliter.split(lines[2])[1])
+        aligned = int(line_spliter.split(lines[3])[1])
+        multi_aligned = int(line_spliter.split(lines[4])[1])
+        return (unaligned, aligned, multi_aligned)
+    except:
+        print("Invalid Format")
 
 
 

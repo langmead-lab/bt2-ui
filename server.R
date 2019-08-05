@@ -1363,6 +1363,9 @@ function(input, output, session) {
       output$display_mapq <- reactive({
         length(rvs$mapq_scores) > 0
       })
+      output$display_summary <- reactive({
+        rvs$alignment_summary != ""
+      })
 
       outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
       outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
@@ -1370,6 +1373,7 @@ function(input, output, session) {
       outputOptions(output, "display_second", suspendWhenHidden = FALSE)
       outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
       outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
+      outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
 
 
       incProgress(1/n, "Generating plots")
@@ -1424,6 +1428,11 @@ function(input, output, session) {
       incProgress(1/n, "Displaying plots")
     })
   })
+
+
+
+
+
 
   observeEvent(input$visualUpdate, {
     withProgress(message = "Making plots", value = 0, {
