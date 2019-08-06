@@ -1280,7 +1280,32 @@ function(input, output, session) {
     withProgress(message = "Making plots", value = 0, {
       n <- 5
       incProgress(1/n, "Running bowtie2")
-      query <- paste("-x genome --sra-acc ", input$index4)
+      supressions <- ""
+      if(input$visuals_noMixed) {
+        supressions <- paste0(supressions, " --no-mixed")
+      }
+      if(input$visuals_noDiscordant) {
+        supressions <- paste0(supressions, " --no-discordant")
+      }
+      if(input$visuals_doveTail) {
+        supressions <- paste0(supressions, " --dovetail")
+      }
+      if(input$visuals_noContain) {
+        supressions <- paste0(supressions, " --no-contain")
+      }
+      if(input$visuals_noOverlap) {
+        supressions <- paste0(supressions, " --no-overlap")
+      }
+      query <- paste0(supressions, " ",
+                      input$visuals_typeOfQualityValues, " ",
+                      "--minins ", input$visuals_minIns, " ",
+                      "--maxins ", input$visuals_maxIns, " ",
+                      "--trim3 ", input$visuals_trim3, " ", 
+                      "--trim5 ", input$visuals_trim5,  " ", 
+                      "--skip ", input$visuals_skip, " ", 
+                      input$visuals_mateAlign, 
+                      " -x genome --sra-acc ", 
+                      input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
       if (out$stdout == "") {
@@ -1289,7 +1314,7 @@ function(input, output, session) {
         })
       } else {
         output$displayError <- renderText({
-          ""
+          query
         })
         rvs$alignment_summary <- out$stderr
       }
@@ -1297,7 +1322,10 @@ function(input, output, session) {
       incProgress(1/n, "Parsing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
-      summary_data <- parseAlignemntSummary(rvs$alignment_summary)
+      if (is.character(rvs$alignment_summary)) {
+        summary_data <- parseAlignmentSummary(rvs$alignment_summary)
+        rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
+      }
       rvs$accession <- isolate(input$index4)
       rvs$index <- isolate(input$index3)
       rvs$lines_read <- isolate(input$readNumber)
@@ -1306,7 +1334,7 @@ function(input, output, session) {
       })
       #isolate(output$lines_processed())
       rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      rvs$summary_lables <-c('Aligned 0 Concordantly Times', "Aligned 1 Concordantly Time", "Aligned >1 Concordantly Times")
+      rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
       rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       rvs$read_quality_unpaired <- graph_data[[4]]
       rvs$read_quality_first <- graph_data[[5]]
@@ -1314,9 +1342,6 @@ function(input, output, session) {
       rvs$match_scores <- graph_data[[7]]
       rvs$tlen <- graph_data[[8]]
       rvs$mapq_scores <- graph_data[[9]]
-
-      rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
-
 
       if(length(rvs$read_quality_unpaired) > 1) {
         boxplot_unpaired <- plot_ly(type = 'box')
@@ -1429,11 +1454,6 @@ function(input, output, session) {
     })
   })
 
-
-
-
-
-
   observeEvent(input$visualUpdate, {
     withProgress(message = "Making plots", value = 0, {
       n <- 5
@@ -1444,6 +1464,7 @@ function(input, output, session) {
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
+          query
         })
       } else {
         output$displayError <- renderText({
