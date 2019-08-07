@@ -152,9 +152,8 @@ visuals_tab <- fluidPage(
           ),
           tabPanel(
             "STD ERR Output",
-            conditionalPanel(condition = TRUE,
-                             # "output.display_summary",
-                             # plotlyOutput("alignment_pieplot")
+            conditionalPanel(condition = "output.display_summary",
+                             plotlyOutput("alignment_pieplot"),
                              textOutput("displayInfo")
             )
           ),

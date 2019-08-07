@@ -1300,11 +1300,11 @@ function(input, output, session) {
                       input$visuals_typeOfQualityValues, " ",
                       "--minins ", input$visuals_minIns, " ",
                       "--maxins ", input$visuals_maxIns, " ",
-                      "--trim3 ", input$visuals_trim3, " ", 
-                      "--trim5 ", input$visuals_trim5,  " ", 
-                      "--skip ", input$visuals_skip, " ", 
-                      input$visuals_mateAlign, 
-                      " -x genome --sra-acc ", 
+                      "--trim3 ", input$visuals_trim3, " ",
+                      "--trim5 ", input$visuals_trim5,  " ",
+                      "--skip ", input$visuals_skip, " ",
+                      input$visuals_mateAlign,
+                      " -x genome --sra-acc ",
                       input$index4)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
@@ -1316,7 +1316,7 @@ function(input, output, session) {
         output$displayError <- renderText({
           query
         })
-        # rvs$alignment_summary <- out$stderr
+        rvs$alignment_summary <- out$stderr
       }
       output$displayInfo <- renderText({
         out$stderr
@@ -1325,10 +1325,10 @@ function(input, output, session) {
       incProgress(1/n, "Parsing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
-      # if (is.character(rvs$alignment_summary)) {
-      #   summary_data <- parseAlignmentSummary(rvs$alignment_summary)
-      #   rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
-      # }
+      if (is.character(rvs$alignment_summary)) {
+        summary_data <- parseAlignmentSummary(rvs$alignment_summary)
+        rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
+      }
       rvs$accession <- isolate(input$index4)
       rvs$index <- isolate(input$index3)
       rvs$lines_read <- isolate(input$readNumber)
@@ -1337,7 +1337,7 @@ function(input, output, session) {
       })
       #isolate(output$lines_processed())
       rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      # rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
+      rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
       rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       rvs$read_quality_unpaired <- graph_data[[4]]
       rvs$read_quality_first <- graph_data[[5]]
@@ -1440,10 +1440,10 @@ function(input, output, session) {
         plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
-      # output$alignment_pieplot <- renderPlotly({
-      #   plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
-      #     layout(title = "Alignment Counts")
-      # })
+      output$alignment_pieplot <- renderPlotly({
+        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
+          layout(title = "Alignment Counts")
+      })
       output$erroutput <- renderText({
         out$stderr
       })
@@ -1473,7 +1473,7 @@ function(input, output, session) {
       incProgress(1/n, "Parsing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
-      summary_data <- parseAlignemntSummary(rvs$alignment_summary)
+      summary_data <- parseAlignmentSummary(rvs$alignment_summary)
       rvs$lines_read <- rvs$lines_read + input$readNumber
       output$lines_processed <- renderText({
         paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
