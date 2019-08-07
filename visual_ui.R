@@ -56,12 +56,6 @@ visuals_tab <- fluidPage(
               inline = FALSE
             ),
             numericInput(
-              inputId = "visuals_skip",
-              label = h5("skip the first <int> reads/pairs in the input"),
-              value = 0,
-              min = 0
-            ),
-            numericInput(
               inputId = "visuals_trim5",
               label = h5("trim <int> bases from 5'/left end of reads"),
               value = 0,
@@ -149,10 +143,10 @@ visuals_tab <- fluidPage(
                              plotlyOutput("mapq_histogram"))
           ),
           tabPanel(
-            "STD ERR Output",
+            "Alignemnt Summary",
             conditionalPanel(condition = "output.display_summary",
-                             plotlyOutput("alignment_pieplot"),
-                             textOutput("displayInfo")
+                             plotlyOutput("alignment_pieplot")
+                             # textOutput("displayInfo")
             )
           ),
           conditionalPanel(condition = "output.visual_update",

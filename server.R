@@ -1275,6 +1275,11 @@ function(input, output, session) {
       removeTab("bowtie2tabs", "Help", session = session)
     })
   }
+
+
+
+
+
   ##VISUALS
   observeEvent(input$visualSubmit, {
     withProgress(message = "Making plots", value = 0, {
@@ -1302,7 +1307,6 @@ function(input, output, session) {
                       "--maxins ", input$visuals_maxIns, " ",
                       "--trim3 ", input$visuals_trim3, " ",
                       "--trim5 ", input$visuals_trim5,  " ",
-                      "--skip ", input$visuals_skip, " ",
                       input$visuals_mateAlign,
                       " -x genome --sra-acc ",
                       input$index4)
@@ -1455,7 +1459,32 @@ function(input, output, session) {
     withProgress(message = "Making plots", value = 0, {
       n <- 5
       incProgress(1/n, "Running bowtie2")
-      query <- paste(" --skip ", rvs$lines_read, " -x genome --sra-acc ", rvs$accession)
+      supressions <- ""
+      if(input$visuals_noMixed) {
+        supressions <- paste0(supressions, " --no-mixed")
+      }
+      if(input$visuals_noDiscordant) {
+        supressions <- paste0(supressions, " --no-discordant")
+      }
+      if(input$visuals_doveTail) {
+        supressions <- paste0(supressions, " --dovetail")
+      }
+      if(input$visuals_noContain) {
+        supressions <- paste0(supressions, " --no-contain")
+      }
+      if(input$visuals_noOverlap) {
+        supressions <- paste0(supressions, " --no-overlap")
+      }
+      query <- paste0(supressions, " ",
+                      input$visuals_typeOfQualityValues, " ",
+                      "--minins ", input$visuals_minIns, " ",
+                      "--maxins ", input$visuals_maxIns, " ",
+                      "--trim3 ", input$visuals_trim3, " ",
+                      "--trim5 ", input$visuals_trim5,  " ",
+                      "--skip ", rvs$lines_read, " ",
+                      input$visuals_mateAlign,
+                      " -x genome --sra-acc ",
+                      rvs$accession)
       out <-
         submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = rvs$index)
       if (out$stdout == "") {
@@ -1485,6 +1514,31 @@ function(input, output, session) {
 
       rvs$match_scores <- c(rvs$match_scores, graph_data[[7]])
       rvs$tlen <- c(rvs$tlen, graph_data[[8]])
+
+      if (length(graph_data[[4]]) > length(rvs$read_quality_unpaired)) {
+        temp <- vector()
+        for (i in length(graph_data[[4]]) - length(rvs$read_quality_unpaired)) {
+          temp <- c(temp, vector())
+        }
+        rvs$read_quality_unpaired <- c(rvs$read_quality_unpaired, temp)
+      }
+
+      if (length(graph_data[[5]]) > length(rvs$read_quality_first)) {
+        temp <- vector()
+        for (i in length(graph_data[[5]]) - length(rvs$read_quality_first)) {
+          temp <- c(temp, vector())
+        }
+        rvs$read_quality_first <- c(rvs$read_quality_first, temp)
+      }
+
+      if (length(graph_data[[6]]) > length(rvs$read_quality_second)) {
+        temp <- vector()
+        for (i in length(graph_data[[6]]) - length(rvs$read_quality_second)) {
+          temp <- c(temp, vector())
+        }
+        rvs$read_quality_second <- c(rvs$read_quality_second, temp)
+      }
+
 
       for (i in length(graph_data[[4]])) {
         rvs$read_quality_unpaired[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[4]][[i]])
