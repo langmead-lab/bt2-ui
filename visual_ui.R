@@ -4,12 +4,10 @@ library(plotly)
 library(shinycssloaders)
 
 visuals_tab <- fluidPage(
-  titlePanel(
-    h4("Welcome to the Visual App!"),
-    p("This app is designed to help you see what your data looks like.")
-  ),
+  titlePanel("Welcome to the Visual App!"),
   sidebarLayout(
     sidebarPanel(
+      p("This app is designed to help you see what your data looks like."),
       fluidRow(
         id = "selectVisualIndex",
         selectizeInput(
