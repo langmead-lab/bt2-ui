@@ -1,3 +1,4 @@
 .vagrant
 .Rproj.user
 reset.sh
+indexes/*
