@@ -26,7 +26,7 @@ visuals_tab <- fluidPage(
       fluidRow(
         id = "enterNumberOfReads",
         numericInput("readNumber",
-                     label = "Number of Read to be Processed",
+                     label = "Stop after first <int> reads",
                      value = 10000)
       ),
       fluidRow(
@@ -38,13 +38,91 @@ visuals_tab <- fluidPage(
           actionButton("visualUpdate", label = "Next reads"),
           textOutput("lines_processed")
         )
+      ),
+      br(),
+      div(id = "visuals_formatOptions",
+          box(
+            width = NULL,
+            title = "Input Options",
+            status = "warning",
+            collapsible = TRUE,
+            radioButtons(
+              inputId = "visuals_typeOfQualityValues",
+              label = h5("Type of Quality Values"),
+              choices = list(
+                "Phred 33" = "--phred33",
+                "Phred 64" = "--phred64",
+                "Integer Qualities" = "--int-quals"
+              ),
+              selected = "--phred33",
+              inline = FALSE
+            ),
+            numericInput(
+              inputId = "visuals_skip",
+              label = h5("skip the first <int> reads/pairs in the input"),
+              value = 0,
+              min = 0
+            ),
+            numericInput(
+              inputId = "visuals_trim5",
+              label = h5("trim <int> bases from 5'/left end of reads"),
+              value = 0,
+              min = 0
+            ),
+            numericInput(
+              inputId = "visuals_trim3",
+              label = h5("trim <int> bases from 3'/right end of reads"),
+              value = 0,
+              min = 0
+            )
+          ),
+          conditionalPanel(
+            condition = TRUE,
+            box(
+              width = NULL,
+              title = "Paired-end",
+              collapsible = TRUE,
+              collapsed = TRUE,
+              numericInput(
+                "visuals_minIns",
+                label = h5("Minimum fragment length"),
+                value = 0
+              ),
+              numericInput(
+                "visuals_maxIns",
+                label = h5("Maximum fragment length"),
+                value = 500
+              ),
+              radioButtons(
+                "visuals_mateAlign",
+                label = h5("Mate alignment"),
+                choices = list(
+                  "fw/rev" = "--fr",
+                  "rev/fw" = "--rf",
+                  "fw/fw" = "--ff"
+                ),
+                selected = "--fr"
+              ),
+              checkboxInput("visuals_noMixed", "Suppress unpaired alignments for paired reads"),
+              checkboxInput(
+                "visuals_noDiscordant",
+                "Suppress discordant alignments for paired reads"
+              ),
+              checkboxInput("visuals_doveTail", "Concordant when mates extend past each other"),
+              checkboxInput(
+                "visuals_noContain",
+                "Not concordant when one mate alignment contains other"
+              ),
+              checkboxInput("visuals_noOverlap", "Not concordant when mates overlap at all")
+            )
+          )
       )
     ),
     mainPanel(
       conditionalPanel(
         condition = "output.visual_update",
+        textOutput("displayError"),
         tabsetPanel(
-
           tabPanel(
             "Match Scores",
             plotlyOutput("match_score_histogram")
@@ -68,14 +146,17 @@ visuals_tab <- fluidPage(
                              plotlyOutput("tlen_histogram"))
           ),
           tabPanel(
-            "Alignment Summary",
-            conditionalPanel(condition = "output.display_summary",
-                              plotlyOutput("alignment_pieplot"))
-          ),
-          tabPanel(
             "MAPQ Scores",
             conditionalPanel(condition = "output.display_mapq",
-                              plotlyOutput("mapq_histogram"))
+                             plotlyOutput("mapq_histogram"))
+          ),
+          tabPanel(
+            "STD ERR Output",
+            conditionalPanel(condition = TRUE,
+                             # "output.display_summary",
+                             # plotlyOutput("alignment_pieplot")
+                             textOutput("displayInfo")
+            )
           ),
           conditionalPanel(condition = "output.visual_update",
                            downloadButton("bt2DownloadSAM2", "Download Sam File"))

@@ -124,7 +124,7 @@ def parseString(txt):
     read_quality_second = read_quality_converter(read_quality_second)
     return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores, tlen, mapq_scores)
 
-def parseAlignemntSummary(txt):
+def parseAlignmentSummary(txt):
     spliter = re.compile('\n+')
     line_spliter = re.compile('\s+')
     period_spliter = re.compile('\.\s')
@@ -135,11 +135,6 @@ def parseAlignemntSummary(txt):
     aligned = int(line_spliter.split(lines[3])[1])
     multi_aligned = int(line_spliter.split(lines[4])[1])
     return (unaligned, aligned, multi_aligned)
-
-
-
-
-
 
 
 def matched_vs_unmatched_pie_chart(forward_reads, reverse_reads, unmatched_reads):
