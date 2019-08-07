@@ -1316,16 +1316,19 @@ function(input, output, session) {
         output$displayError <- renderText({
           query
         })
-        rvs$alignment_summary <- out$stderr
+        # rvs$alignment_summary <- out$stderr
       }
+      output$displayInfo <- renderText({
+        out$stderr
+      })
       rvs$bt2_sam <- out$stdout
       incProgress(1/n, "Parsing results")
       source_python("graph_util.py")
       graph_data <- parseString(rvs$bt2_sam)
-      if (is.character(rvs$alignment_summary)) {
-        summary_data <- parseAlignmentSummary(rvs$alignment_summary)
-        rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
-      }
+      # if (is.character(rvs$alignment_summary)) {
+      #   summary_data <- parseAlignmentSummary(rvs$alignment_summary)
+      #   rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
+      # }
       rvs$accession <- isolate(input$index4)
       rvs$index <- isolate(input$index3)
       rvs$lines_read <- isolate(input$readNumber)
@@ -1334,7 +1337,7 @@ function(input, output, session) {
       })
       #isolate(output$lines_processed())
       rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
+      # rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
       rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
       rvs$read_quality_unpaired <- graph_data[[4]]
       rvs$read_quality_first <- graph_data[[5]]
@@ -1351,7 +1354,6 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-
       if(length(rvs$read_quality_first) > 1) {
         boxplot_first <- plot_ly(type = 'box')
         pos <- 1
@@ -1360,7 +1362,6 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-
       if(length(rvs$read_quality_second) > 1) {
         boxplot_second <- plot_ly(type = 'box')
         pos <- 1
@@ -1369,7 +1370,6 @@ function(input, output, session) {
           pos <- pos + 1
         }
       }
-
       output$visual_update <- reactive({
         TRUE
       })
@@ -1400,7 +1400,6 @@ function(input, output, session) {
       outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
       outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
 
-
       incProgress(1/n, "Generating plots")
 
       if(length(rvs$read_quality_unpaired) > 1) {
@@ -1409,7 +1408,6 @@ function(input, output, session) {
           layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
         })
       }
-
       if(length(rvs$read_quality_first) > 1) {
         output$boxplot_first <-renderPlotly({
           boxplot_first %>%
@@ -1438,15 +1436,14 @@ function(input, output, session) {
             layout(title = "MAPQ Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
         })
       }
-
       output$pieplot <- renderPlotly({
         plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
-      output$alignment_pieplot <- renderPlotly({
-        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
-          layout(title = "Alignment Counts")
-      })
+      # output$alignment_pieplot <- renderPlotly({
+      #   plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
+      #     layout(title = "Alignment Counts")
+      # })
       output$erroutput <- renderText({
         out$stderr
       })
