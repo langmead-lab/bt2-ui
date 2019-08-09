@@ -28,12 +28,15 @@ visuals_tab <- fluidPage(
                      value = 10000)
       ),
       fluidRow(
-        actionButton("visualSubmit", label = "Submit")
+        bsButton("visualSubmit",
+                 "Submit",
+                 style = "primary",
+                 icon = icon("play"))
       ),
       fluidRow(
         conditionalPanel(
           condition = "output.visual_update",
-          actionButton("visualUpdate", label = "Next reads"),
+          bsButton("visualUpdate", label = "Next reads", style = "success", icon = icon("play")),
           textOutput("lines_processed")
         )
       ),
