@@ -1319,140 +1319,137 @@ function(input, output, session) {
         })
       } else {
         output$displayError <- renderText({
-          query
+          ""
         })
         rvs$alignment_summary <- out$stderr
-      }
-      output$displayInfo <- renderText({
-        out$stderr
-      })
-      rvs$bt2_sam <- out$stdout
-      incProgress(1/n, "Parsing results")
-      source_python("graph_util.py")
-      graph_data <- parseString(rvs$bt2_sam)
-      if (is.character(rvs$alignment_summary)) {
-        summary_data <- parseAlignmentSummary(rvs$alignment_summary)
-        rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
-      }
-      rvs$accession <- isolate(input$index4)
-      rvs$index <- isolate(input$index3)
-      rvs$lines_read <- isolate(input$readNumber)
-      output$lines_processed <- renderText({
-        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
-      })
-      # isolate(output$lines_processed())
-      rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
-      rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
-      rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
-      rvs$read_quality_unpaired <- graph_data[[4]]
-      rvs$read_quality_first <- graph_data[[5]]
-      rvs$read_quality_second <- graph_data[[6]]
-      rvs$match_scores <- graph_data[[7]]
-      rvs$tlen <- graph_data[[8]]
-      rvs$mapq_scores <- graph_data[[9]]
-
-      if(length(rvs$read_quality_unpaired) > 1) {
-        boxplot_unpaired <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_unpaired) {
-          boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
+        rvs$bt2_sam <- out$stdout
+        incProgress(1/n, "Parsing results")
+        source_python("graph_util.py")
+        graph_data <- parseString(rvs$bt2_sam)
+        if (is.character(rvs$alignment_summary)) {
+          summary_data <- parseAlignmentSummary(rvs$alignment_summary)
+          rvs$alignment_data <- c(summary_data[[1]], summary_data[[2]], summary_data[[3]])
         }
-      }
-      if(length(rvs$read_quality_first) > 1) {
-        boxplot_first <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_first) {
-          boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
+        rvs$accession <- isolate(input$index4)
+        rvs$index <- isolate(input$index3)
+        rvs$lines_read <- isolate(input$readNumber)
+        output$lines_processed <- renderText({
+          paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
+        })
+        # isolate(output$lines_processed())
+        rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
+        rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
+        rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
+        rvs$read_quality_unpaired <- graph_data[[4]]
+        rvs$read_quality_first <- graph_data[[5]]
+        rvs$read_quality_second <- graph_data[[6]]
+        rvs$match_scores <- graph_data[[7]]
+        rvs$tlen <- graph_data[[8]]
+        rvs$mapq_scores <- graph_data[[9]]
+
+        if(length(rvs$read_quality_unpaired) > 1) {
+          boxplot_unpaired <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_unpaired) {
+            boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
         }
-      }
-      if(length(rvs$read_quality_second) > 1) {
-        boxplot_second <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_second) {
-          boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
+        if(length(rvs$read_quality_first) > 1) {
+          boxplot_first <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_first) {
+            boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
         }
-      }
-      output$visual_update <- reactive({
-        TRUE
-      })
-      output$display_unpaired <- reactive({
-        length(rvs$read_quality_unpaired) > 1
-      })
-      output$display_first <- reactive({
-        length(rvs$read_quality_first) > 1
-      })
-      output$display_second <- reactive({
-        length(rvs$read_quality_second) > 1
-      })
-      output$display_tlen <- reactive({
-        length(rvs$tlen) > 0
-      })
-      output$display_mapq <- reactive({
-        length(rvs$mapq_scores) > 0
-      })
-      output$display_summary <- reactive({
-        rvs$alignment_summary != ""
-      })
+        if(length(rvs$read_quality_second) > 1) {
+          boxplot_second <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_second) {
+            boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
+        }
+        output$visual_update <- reactive({
+          TRUE
+        })
+        output$display_unpaired <- reactive({
+          length(rvs$read_quality_unpaired) > 1
+        })
+        output$display_first <- reactive({
+          length(rvs$read_quality_first) > 1
+        })
+        output$display_second <- reactive({
+          length(rvs$read_quality_second) > 1
+        })
+        output$display_tlen <- reactive({
+          length(rvs$tlen) > 0
+        })
+        output$display_mapq <- reactive({
+          length(rvs$mapq_scores) > 0
+        })
+        output$display_summary <- reactive({
+          rvs$alignment_summary != ""
+        })
 
-      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_first", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_second", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
+        outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_first", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_second", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
 
-      incProgress(1/n, "Generating plots")
+        incProgress(1/n, "Generating plots")
 
-      if(length(rvs$read_quality_unpaired) > 1) {
-        output$boxplot_unpaired <-renderPlotly({
-          boxplot_unpaired %>%
-          layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        if(length(rvs$read_quality_unpaired) > 1) {
+          output$boxplot_unpaired <-renderPlotly({
+            boxplot_unpaired %>%
+            layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        if(length(rvs$read_quality_first) > 1) {
+          output$boxplot_first <-renderPlotly({
+            boxplot_first %>%
+              layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        if(length(rvs$read_quality_second) > 1) {
+          output$boxplot_second <-renderPlotly({
+            boxplot_second %>%
+              layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        output$match_score_histogram <-renderPlotly({
+          plot_ly(x = rvs$match_scores, type = 'histogram') %>%
+            layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
         })
-      }
-      if(length(rvs$read_quality_first) > 1) {
-        output$boxplot_first <-renderPlotly({
-          boxplot_first %>%
-            layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        if(length(rvs$tlen) > 0) {
+          output$tlen_histogram <-renderPlotly({
+            plot_ly(x = rvs$tlen, type = 'histogram') %>%
+              layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
+          })
+        }
+        if(length(rvs$mapq_scores) > 0) {
+          output$mapq_histogram <- renderPlotly({
+            plot_ly(x = rvs$mapq_scores, type = 'histogram') %>%
+              layout(title = "MAPQ Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
+          })
+        }
+        output$pieplot <- renderPlotly({
+          plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
+            layout(title = "Matched Reads vs Unmatched Reads")
         })
-      }
-      if(length(rvs$read_quality_second) > 1) {
-        output$boxplot_second <-renderPlotly({
-          boxplot_second %>%
-            layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        output$alignment_pieplot <- renderPlotly({
+          plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
+            layout(title = "Alignment Counts")
         })
-      }
-      output$match_score_histogram <-renderPlotly({
-        plot_ly(x = rvs$match_scores, type = 'histogram') %>%
-          layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-      })
-      if(length(rvs$tlen) > 0) {
-        output$tlen_histogram <-renderPlotly({
-          plot_ly(x = rvs$tlen, type = 'histogram') %>%
-            layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
+        output$erroutput <- renderText({
+          out$stderr
         })
+        incProgress(1/n, "Displaying plots")
       }
-      if(length(rvs$mapq_scores) > 0) {
-        output$mapq_histogram <- renderPlotly({
-          plot_ly(x = rvs$mapq_scores, type = 'histogram') %>%
-            layout(title = "MAPQ Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-        })
-      }
-      output$pieplot <- renderPlotly({
-        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
-          layout(title = "Matched Reads vs Unmatched Reads")
-      })
-      output$alignment_pieplot <- renderPlotly({
-        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
-          layout(title = "Alignment Counts")
-      })
-      output$erroutput <- renderText({
-        out$stderr
-      })
-      incProgress(1/n, "Displaying plots")
     })
   })
 
@@ -1492,177 +1489,176 @@ function(input, output, session) {
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
-          query
         })
       } else {
         output$displayError <- renderText({
           ""
         })
         rvs$alignment_summary <- out$stderr
-      }
-      rvs$bt2_sam <- out$stdout
-      incProgress(1/n, "Parsing results")
-      source_python("graph_util.py")
-      graph_data <- parseString(rvs$bt2_sam)
-      summary_data <- parseAlignmentSummary(rvs$alignment_summary)
-      rvs$lines_read <- rvs$lines_read + input$readNumber
-      output$lines_processed <- renderText({
-        paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
-      })
-
-      rvs$pie_data[[1]] <- rvs$pie_data[[1]] + graph_data[[1]]
-      rvs$pie_data[[2]] <- rvs$pie_data[[2]] + graph_data[[2]]
-      rvs$pie_data[[3]] <- rvs$pie_data[[3]] + graph_data[[3]]
-
-      rvs$match_scores <- c(rvs$match_scores, graph_data[[7]])
-      rvs$tlen <- c(rvs$tlen, graph_data[[8]])
-
-      if (length(graph_data[[4]]) > length(rvs$read_quality_unpaired)) {
-        temp <- vector()
-        for (i in length(graph_data[[4]]) - length(rvs$read_quality_unpaired)) {
-          temp <- c(temp, vector())
-        }
-        rvs$read_quality_unpaired <- c(rvs$read_quality_unpaired, temp)
-      }
-
-      if (length(graph_data[[5]]) > length(rvs$read_quality_first)) {
-        temp <- vector()
-        for (i in length(graph_data[[5]]) - length(rvs$read_quality_first)) {
-          temp <- c(temp, vector())
-        }
-        rvs$read_quality_first <- c(rvs$read_quality_first, temp)
-      }
-
-      if (length(graph_data[[6]]) > length(rvs$read_quality_second)) {
-        temp <- vector()
-        for (i in length(graph_data[[6]]) - length(rvs$read_quality_second)) {
-          temp <- c(temp, vector())
-        }
-        rvs$read_quality_second <- c(rvs$read_quality_second, temp)
-      }
-
-
-      for (i in length(graph_data[[4]])) {
-        rvs$read_quality_unpaired[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[4]][[i]])
-      }
-      for (i in length(graph_data[[5]])) {
-        rvs$read_quality_first[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[5]][[i]])
-      }
-      for (i in length(graph_data[[6]])) {
-        rvs$read_quality_second[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[6]][[i]])
-      }
-
-      rvs$mapq_scores <- c(rvs$mapq_scores, graph_data[[9]])
-
-
-      rvs$alignment_data[[1]] <- rvs$alignment_data[[1]] + summary_data[[1]]
-      rvs$alignment_data[[2]] <- rvs$alignment_data[[2]] + summary_data[[2]]
-      rvs$alignment_data[[3]] <- rvs$alignment_data[[3]] + summary_data[[3]]
-
-      if(length(rvs$read_quality_unpaired) > 1) {
-        boxplot_unpaired <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_unpaired) {
-          boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
-        }
-      }
-
-      if(length(rvs$read_quality_first) > 1) {
-        boxplot_first <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_first) {
-          boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
-        }
-      }
-
-      if(length(rvs$read_quality_second) > 1) {
-        boxplot_second <- plot_ly(type = 'box')
-        pos <- 1
-        for (i in rvs$read_quality_second) {
-          boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
-          pos <- pos + 1
-        }
-      }
-
-      output$visual_update <- reactive({
-        TRUE
-      })
-      output$display_unpaired <- reactive({
-        (length(rvs$read_quality_unpaired) > 1)
-      })
-      output$display_first <- reactive({
-        (length(rvs$read_quality_first) > 1)
-      })
-      output$display_second <- reactive({
-        length(rvs$read_quality_second) > 1
-      })
-      output$display_tlen <- reactive({
-        length(rvs$tlen) > 0
-      })
-      output$display_mapq <- reactive({
-        length(rvs$mapq_scores) > 0
-      })
-      output$display_summary <- reactive({
-        rvs$alignment_summary != ""
-      })
-
-
-      outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_first", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_second", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
-      outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
-
-      incProgress(1/n, "Generating plots")
-
-      if(length(rvs$read_quality_unpaired) > 1) {
-        output$boxplot_unpaired <-renderPlotly({
-          boxplot_unpaired %>%
-          layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+        rvs$bt2_sam <- out$stdout
+        incProgress(1/n, "Parsing results")
+        source_python("graph_util.py")
+        graph_data <- parseString(rvs$bt2_sam)
+        summary_data <- parseAlignmentSummary(rvs$alignment_summary)
+        rvs$lines_read <- rvs$lines_read + input$readNumber
+        output$lines_processed <- renderText({
+          paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
         })
-      }
-      if(length(rvs$read_quality_first) > 1) {
-        output$boxplot_first <-renderPlotly({
-          boxplot_first %>%
-            layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-        })
-      }
-      if(length(rvs$read_quality_second) > 1) {
-        output$boxplot_second <-renderPlotly({
-          boxplot_second %>%
-            layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
-        })
-      }
-      if(length(rvs$mapq_scores) > 0) {
-        output$mapq_histogram <- renderPlotly({
-          plot_ly(x = rvs$mapq_scores, type = 'histogram') %>%
-            layout(title = "MAPQ Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-        })
-      }
-      output$match_score_histogram <-renderPlotly({
-        plot_ly(x = rvs$match_scores, type = 'histogram') %>%
-          layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
-      })
-      if(length(rvs$tlen) != 0) {
-        output$tlen_histogram <-renderPlotly({
-          plot_ly(x = rvs$tlen, type = 'histogram') %>%
-            layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
-        })
-      }
-      output$pieplot <- renderPlotly({
-        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
-          layout(title = "Matched Reads vs Unmatched Reads")
-      })
-      output$alignment_pieplot <- renderPlotly({
-        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
-          layout(title = "Alignment Counts")
-      })
 
-      incProgress(1/n, "Displaying plots")
+        rvs$pie_data[[1]] <- rvs$pie_data[[1]] + graph_data[[1]]
+        rvs$pie_data[[2]] <- rvs$pie_data[[2]] + graph_data[[2]]
+        rvs$pie_data[[3]] <- rvs$pie_data[[3]] + graph_data[[3]]
+
+        rvs$match_scores <- c(rvs$match_scores, graph_data[[7]])
+        rvs$tlen <- c(rvs$tlen, graph_data[[8]])
+
+        if (length(graph_data[[4]]) > length(rvs$read_quality_unpaired)) {
+          temp <- vector()
+          for (i in length(graph_data[[4]]) - length(rvs$read_quality_unpaired)) {
+            temp <- c(temp, vector())
+          }
+          rvs$read_quality_unpaired <- c(rvs$read_quality_unpaired, temp)
+        }
+
+        if (length(graph_data[[5]]) > length(rvs$read_quality_first)) {
+          temp <- vector()
+          for (i in length(graph_data[[5]]) - length(rvs$read_quality_first)) {
+            temp <- c(temp, vector())
+          }
+          rvs$read_quality_first <- c(rvs$read_quality_first, temp)
+        }
+
+        if (length(graph_data[[6]]) > length(rvs$read_quality_second)) {
+          temp <- vector()
+          for (i in length(graph_data[[6]]) - length(rvs$read_quality_second)) {
+            temp <- c(temp, vector())
+          }
+          rvs$read_quality_second <- c(rvs$read_quality_second, temp)
+        }
+
+
+        for (i in length(graph_data[[4]])) {
+          rvs$read_quality_unpaired[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[4]][[i]])
+        }
+        for (i in length(graph_data[[5]])) {
+          rvs$read_quality_first[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[5]][[i]])
+        }
+        for (i in length(graph_data[[6]])) {
+          rvs$read_quality_second[[i]] <- c(rvs$read_quality_unpaired[[i]], graph_data[[6]][[i]])
+        }
+
+        rvs$mapq_scores <- c(rvs$mapq_scores, graph_data[[9]])
+
+
+        rvs$alignment_data[[1]] <- rvs$alignment_data[[1]] + summary_data[[1]]
+        rvs$alignment_data[[2]] <- rvs$alignment_data[[2]] + summary_data[[2]]
+        rvs$alignment_data[[3]] <- rvs$alignment_data[[3]] + summary_data[[3]]
+
+        if(length(rvs$read_quality_unpaired) > 1) {
+          boxplot_unpaired <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_unpaired) {
+            boxplot_unpaired <- add_trace(boxplot_unpaired, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
+        }
+
+        if(length(rvs$read_quality_first) > 1) {
+          boxplot_first <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_first) {
+            boxplot_first <- add_trace(boxplot_first, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
+        }
+
+        if(length(rvs$read_quality_second) > 1) {
+          boxplot_second <- plot_ly(type = 'box')
+          pos <- 1
+          for (i in rvs$read_quality_second) {
+            boxplot_second <- add_trace(boxplot_second, y = i, name = pos, color = 'rgba(255, 182, 193, .9)', showlegend = FALSE)
+            pos <- pos + 1
+          }
+        }
+
+        output$visual_update <- reactive({
+          TRUE
+        })
+        output$display_unpaired <- reactive({
+          (length(rvs$read_quality_unpaired) > 1)
+        })
+        output$display_first <- reactive({
+          (length(rvs$read_quality_first) > 1)
+        })
+        output$display_second <- reactive({
+          length(rvs$read_quality_second) > 1
+        })
+        output$display_tlen <- reactive({
+          length(rvs$tlen) > 0
+        })
+        output$display_mapq <- reactive({
+          length(rvs$mapq_scores) > 0
+        })
+        output$display_summary <- reactive({
+          rvs$alignment_summary != ""
+        })
+
+
+        outputOptions(output, "visual_update", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_unpaired", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_first", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_second", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_tlen", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_mapq", suspendWhenHidden = FALSE)
+        outputOptions(output, "display_summary", suspendWhenHidden = FALSE)
+
+        incProgress(1/n, "Generating plots")
+
+        if(length(rvs$read_quality_unpaired) > 1) {
+          output$boxplot_unpaired <-renderPlotly({
+            boxplot_unpaired %>%
+            layout(title = "Read Quality(Unpaired)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        if(length(rvs$read_quality_first) > 1) {
+          output$boxplot_first <-renderPlotly({
+            boxplot_first %>%
+              layout(title = "Read Quality(Paired, First)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        if(length(rvs$read_quality_second) > 1) {
+          output$boxplot_second <-renderPlotly({
+            boxplot_second %>%
+              layout(title = "Read Quality(Paired, Second)", xaxis = list(title = "Location"), yaxis = list(title = "Score"))
+          })
+        }
+        if(length(rvs$mapq_scores) > 0) {
+          output$mapq_histogram <- renderPlotly({
+            plot_ly(x = rvs$mapq_scores, type = 'histogram') %>%
+              layout(title = "MAPQ Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
+          })
+        }
+        output$match_score_histogram <-renderPlotly({
+          plot_ly(x = rvs$match_scores, type = 'histogram') %>%
+            layout(title = "Match Scores", xaxis = list(title = "Score"), yaxis = list(title = "Count"))
+        })
+        if(length(rvs$tlen) != 0) {
+          output$tlen_histogram <-renderPlotly({
+            plot_ly(x = rvs$tlen, type = 'histogram') %>%
+              layout(title = "Template Length", xaxis = list(title = "Length"), yaxis = list(title = "Count"))
+          })
+        }
+        output$pieplot <- renderPlotly({
+          plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
+            layout(title = "Matched Reads vs Unmatched Reads")
+        })
+        output$alignment_pieplot <- renderPlotly({
+          plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
+            layout(title = "Alignment Counts")
+        })
+
+        incProgress(1/n, "Displaying plots")
+      }
     })
   })
 
