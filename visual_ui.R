@@ -115,7 +115,7 @@ visuals_tab <- fluidPage(
     ),
     conditionalPanel(condition = "output.visual_update === true",
       mainPanel(
-        # textOutput("displayError"),
+        textOutput("displayError"),
         tabsetPanel(
           tabPanel(
             "Match Scores",
