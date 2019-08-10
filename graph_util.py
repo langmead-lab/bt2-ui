@@ -1,4 +1,5 @@
 import re
+import sys
 
 def parserFile(filename):
     readnumber = re.compile('[r]+\d+')
@@ -77,48 +78,41 @@ def parseString(txt):
     match_scores = []
     mapq_scores = []
 
-    #TODO throw an error/ warning if the readSize is greater than the number
-    #of lines in the file.
-
     lines = spliter.split(txt)
-
     #Itterating though everyline
-    for i in range(len(lines)):
-        try:
-            get_match_score = True
-            #Splitting the lines into whitespace
-            subline = line_spliter.split(lines[i])
+    for i in range(len(lines) - 1):
+        get_match_score = True
+        subline = line_spliter.split(lines[i])
+        if (int(subline[1]) & 4 == 4):
+            unmatched_reads += 1
+            get_match_score = False
+        elif (int(subline[1]) & 16 == 16):
+            reverse_reads += 1
+        else:
+            forward_reads += 1
+        if(int(subline[1]) & 2 == 2): #read is paired
+            tlen.append(abs(int(subline[8])))
+            if(int(subline[1]) & 64 == 64):
+              for j in range(len(subline[10]) - 1):
+                  while(len(read_quality_first) < len(subline[10])):
+                      read_quality_first.append([])
+                  read_quality_first[j].append(subline[10][j])
+            elif(int(subline[1]) & 128 == 128):
+              for j in range(len(subline[10]) - 1):
+                  while(len(read_quality_second) < len(subline[10])):
+                      read_quality_second.append([])
+                  read_quality_second[j].append(subline[10][j])
+        else: #read is unpaired
+          for j in range(len(subline[10]) - 1):
+              while(len(read_quality_unpaired) < len(subline[10])):
+                  read_quality_unpaired.append([])
+              read_quality_unpaired[j].append(subline[10][j])
 
-            if (int(subline[1]) & 4 == 4):
-                unmatched_reads += 1
-                get_match_score = False
-            elif (int(subline[1]) & 16 == 16):
-                reverse_reads += 1
-            else:
-                forward_reads += 1
-            if(int(subline[1]) & 2 == 2): #read is paired
-                if(int(subline[1]) & 64 == 64):
-                  for j in range(len(subline[10])):
-                      while(len(read_quality_first) < len(subline[10])):
-                          read_quality_first.append([])
-                      read_quality_first[j].append(subline[10][j])
-                      tlen.append(abs(int(subline[8])))
-                elif(int(subline[1]) & 128 == 128):
-                  for j in range(len(subline[10])):
-                      while(len(read_quality_second) < len(subline[10])):
-                          read_quality_second.append([])
-                      read_quality_second[j].append(subline[10][j])
-            else: #read is unpaired
-              for j in range(len(subline[10])):
-                  while(len(read_quality_unpaired) < len(subline[10])):
-                      read_quality_unpaired.append([])
-                  read_quality_unpaired[j].append(subline[10][j])
-
-            if (get_match_score):
-                match_scores.append(int(colon_spliter.split(subline[11])[2]))
-                mapq_scores.append(int(subline[4]))
-        except:
-            print("Invalid Line")
+        if (get_match_score):
+            match_scores.append(int(colon_spliter.split(subline[11])[2]))
+            mapq_scores.append(int(subline[4]))
+    # except:
+    #     print("Invalid Line")
     read_quality_unpaired = read_quality_converter(read_quality_unpaired)
     read_quality_first = read_quality_converter(read_quality_first)
     read_quality_second = read_quality_converter(read_quality_second)
