@@ -1339,7 +1339,7 @@ function(input, output, session) {
       output$lines_processed <- renderText({
         paste0("You have read ", rvs$lines_read, " lines.", "Would you like to read ", input$readNumber, " more?")
       })
-      #isolate(output$lines_processed())
+      # isolate(output$lines_processed())
       rvs$pie_labels <- c('Forward Reads(Matched)', 'Reverse Reads (Matched)', 'Unmatched Reads')
       rvs$summary_lables <-c('Aligned Concordantly 0 Times', "Aligned Concordantly 1 Time", "Aligned Concordantly >1 Times")
       rvs$pie_data <- list(graph_data[[1]], graph_data[[2]], graph_data[[3]])
@@ -1441,7 +1441,7 @@ function(input, output, session) {
         })
       }
       output$pieplot <- renderPlotly({
-        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
+        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
       output$alignment_pieplot <- renderPlotly({
@@ -1652,7 +1652,7 @@ function(input, output, session) {
         })
       }
       output$pieplot <- renderPlotly({
-        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie') %>%
+        plot_ly(labels = rvs$pie_labels, values = rvs$pie_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
           layout(title = "Matched Reads vs Unmatched Reads")
       })
       output$alignment_pieplot <- renderPlotly({
