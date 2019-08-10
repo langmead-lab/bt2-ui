@@ -1307,6 +1307,7 @@ function(input, output, session) {
                       "--maxins ", input$visuals_maxIns, " ",
                       "--trim3 ", input$visuals_trim3, " ",
                       "--trim5 ", input$visuals_trim5,  " ",
+                      "--no-hd ",
                       input$visuals_mateAlign,
                       " -x genome --sra-acc ",
                       input$index4)
@@ -1445,7 +1446,7 @@ function(input, output, session) {
           layout(title = "Matched Reads vs Unmatched Reads")
       })
       output$alignment_pieplot <- renderPlotly({
-        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
+        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
           layout(title = "Alignment Counts")
       })
       output$erroutput <- renderText({
@@ -1482,6 +1483,7 @@ function(input, output, session) {
                       "--trim3 ", input$visuals_trim3, " ",
                       "--trim5 ", input$visuals_trim5,  " ",
                       "--skip ", rvs$lines_read, " ",
+                      "--no-hd ",
                       input$visuals_mateAlign,
                       " -x genome --sra-acc ",
                       rvs$accession)
@@ -1656,11 +1658,111 @@ function(input, output, session) {
           layout(title = "Matched Reads vs Unmatched Reads")
       })
       output$alignment_pieplot <- renderPlotly({
-        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie') %>%
+        plot_ly(labels = rvs$summary_lables, values = rvs$alignment_data, type = 'pie', marker = list(colors = c('#7D59B3', '#62B374', '#FFDDB3'))) %>%
           layout(title = "Alignment Counts")
       })
 
       incProgress(1/n, "Displaying plots")
     })
   })
+
+  output$matched_download <- downloadHandler(
+    filename = function() {
+      paste("match_score_histogram_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(rvs$match_scores, file)
+    }
+  )
+
+  output$tlen_download <- downloadHandler(
+    filename = function() {
+      paste("tlen_histogram_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(rvs$tlen, file)
+    }
+  )
+
+  output$mapq_download <- downloadHandler(
+    filename = function() {
+      paste("mapq_histogram_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(rvs$mapq_scores, file)
+    }
+  )
+
+  output$matched_pie_download <- downloadHandler(
+    filename = function() {
+      paste("matched_pie_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write_file(paste("\"Matched forward\",", toString(rvs$pie_data[[1]]),
+                      "\n\"Matched reverse\", ", toString(rvs$pie_data[[2]]),
+                      "\n\"Unmatched\", ", toString(rvs$pie_data[[3]])), file)
+    }
+  )
+
+  output$alignment_download <- downloadHandler(
+    filename = function() {
+      paste("alignemnt_pie_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write_file(paste("\"Aligned Concordant 0 Times\",", toString(rvs$alignment_data[[1]]),
+                      "\n\"Aligned Concordant 1 Time\", ", toString(rvs$alignment_data[[2]]),
+                      "\n\"Aligned Concordant >1 Times\", ", toString(rvs$alignment_data[[3]])), file)
+    }
+  )
+
+  output$unpaired_download <- downloadHandler(
+    filename = function() {
+      paste("unpaired_boxplot_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(do.call(rbind.data.frame, rvs$read_quality_unpaired), file)
+    }
+  )
+
+  output$first_download <- downloadHandler(
+    filename = function() {
+      paste("first_boxplot_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(do.call(rbind.data.frame, rvs$read_quality_first), file)
+    }
+  )
+
+  output$second_download <- downloadHandler(
+    filename = function() {
+      paste("second_boxplot_data-",
+        format(Sys.time(), "%m%d%Y%H%M%S"),
+        ".cvs",
+        sep = "")
+    },
+    content = function(file) {
+      write.csv(do.call(rbind.data.frame, rvs$read_quality_second), file)
+    }
+  )
 }

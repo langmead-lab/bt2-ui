@@ -113,42 +113,49 @@ visuals_tab <- fluidPage(
           )
       )
     ),
-    mainPanel(
-      conditionalPanel(
-        condition = "output.visual_update",
-        textOutput("displayError"),
+    conditionalPanel(condition = "output.visual_update === true",
+      mainPanel(
+        # textOutput("displayError"),
         tabsetPanel(
           tabPanel(
             "Match Scores",
-            plotlyOutput("match_score_histogram")
+            plotlyOutput("match_score_histogram"),
+            downloadButton("matched_download", "Download CSV")
           ),
           tabPanel(
             "Alignment Scores",
             conditionalPanel(condition = "output.display_unpaired",
-                             plotlyOutput("boxplot_unpaired")),
+                             plotlyOutput("boxplot_unpaired"),
+                             downloadButton("unpaired_download", "Download CSV")),
             conditionalPanel(condition = "output.display_first",
-                             plotlyOutput("boxplot_first")),
+                             plotlyOutput("boxplot_first"),
+                             downloadButton("first_download", "Download CSV")),
             conditionalPanel(condition = "output.display_second",
-                             plotlyOutput("boxplot_second"))
+                             plotlyOutput("boxplot_second"),
+                             downloadButton("second_download", "Download CSV"))
           ),
           tabPanel(
             "Matched vs Unmatched Reads",
-            plotlyOutput("pieplot")
+            plotlyOutput("pieplot"),
+            downloadButton("matched_pie_download", "Download CSV")
           ),
           tabPanel(
             "TLEN",
             conditionalPanel(condition = "output.display_tlen",
-                             plotlyOutput("tlen_histogram"))
+                             plotlyOutput("tlen_histogram"),
+                             downloadButton("tlen_download", "Download CSV"))
           ),
           tabPanel(
             "MAPQ Scores",
             conditionalPanel(condition = "output.display_mapq",
-                             plotlyOutput("mapq_histogram"))
+                             plotlyOutput("mapq_histogram"),
+                             downloadButton("mapq_download", "Download CSV"))
           ),
           tabPanel(
             "Alignemnt Summary",
             conditionalPanel(condition = "output.display_summary",
-                             plotlyOutput("alignment_pieplot")
+                             plotlyOutput("alignment_pieplot"),
+                             downloadButton("alignment_download", "Download CSV")
                              # textOutput("displayInfo")
             )
           ),
