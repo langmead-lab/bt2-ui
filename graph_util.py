@@ -119,11 +119,13 @@ def parseString(txt):
     return (forward_reads, reverse_reads, unmatched_reads, read_quality_unpaired, read_quality_first, read_quality_second, match_scores, tlen, mapq_scores)
 
 def parseAlignmentSummary(txt):
+    sys.stderr.write(txt)
     spliter = re.compile('\n+')
     line_spliter = re.compile('\s+')
-    period_spliter = re.compile('\.\s')
-    if period_spliter.search(txt):
-        txt = period_spliter.split(txt)[-1]
+    summary_finder = re.compile('\d+\sreads;\sof\sthese:')
+    sys.stderr.write(summary_finder.split(txt)[-1])
+    if summary_finder.search(txt):
+        txt = summary_finder.split(txt)[-1]
     lines = spliter.split(txt)
     unaligned = int(line_spliter.split(lines[2])[1])
     aligned = int(line_spliter.split(lines[3])[1])
