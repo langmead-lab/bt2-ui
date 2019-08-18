@@ -4,6 +4,7 @@ library(processx)
 
 source("bowtie2_ui.R")
 source("crispr_ui.R")
+source("visual_ui.R")
 
 virtualenv_create("r-reticulate")
 use_virtualenv("r-reticulate")
@@ -15,5 +16,5 @@ soup <- bs4$BeautifulSoup(manual, "html.parser")
 
 bt2 <- paste("/software", "bowtie2/bowtie2", sep = "/")
 bt2_usage <- run(bt2, "--help")$stdout
-
+read_count <- 10000
 enableBookmarking(store = "url")

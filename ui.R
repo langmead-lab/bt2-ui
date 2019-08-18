@@ -132,6 +132,7 @@ sidebar <- dashboardSidebar(collapsed = TRUE,
     id = "tabs",
     menuItem(h5("Bowtie 2"), tabName = "bowtie2"),
     menuItem(h5("CRISPR"), tabName = "crispr"),
+    menuItem(h5("Visuals"), tabName = "visuals"),
     menuItem(h5("Help"), tabName = "manual")
   ))
 
@@ -146,6 +147,7 @@ body <- dashboardBody(
   tabItems(
     tabItem("bowtie2", bowtie2_tab),
     tabItem("crispr", crispr_tab),
+    tabItem("visuals", visuals_tab),
     tabItem(
       "manual",
       tags$iframe(style = "position: absolute; height: 100%; border: none", width =
@@ -157,9 +159,10 @@ body <- dashboardBody(
 header <- customDashboardHeader(
   menuItem("Bowtie 2", tabName = "bowtie2", selected = TRUE),
   menuItem("CRISPR", tabName = "crispr"),
+  menuItem("Visuals", tabName = "visuals"),
   menuItem("Manual", tabName = "manual")
 )
-# 
+#
 # customDashboardPage <- function(header, sidebar, body, title) {
 #   addDeps <- getFromNamespace("addDeps", "shinydashboard")
 #   content <- div(class = "wrapper", header, sidebar, body)
@@ -170,6 +173,6 @@ header <- customDashboardHeader(
 # }
 
 function(request) {
-  
+
   dashboardPage(header, sidebar, body, title = "bowtie2 UI")
 }
