@@ -133,6 +133,7 @@ sidebar <- dashboardSidebar(collapsed = TRUE,
     menuItem(h5("Bowtie 2"), tabName = "bowtie2"),
     menuItem(h5("CRISPR"), tabName = "crispr"),
     menuItem(h5("Visuals"), tabName = "visuals"),
+    menuItem(h5("Classification"), tabName = "classification"),
     menuItem(h5("Help"), tabName = "manual")
   ))
 
@@ -148,6 +149,7 @@ body <- dashboardBody(
     tabItem("bowtie2", bowtie2_tab),
     tabItem("crispr", crispr_tab),
     tabItem("visuals", visuals_tab),
+    tabItem("classification", classification_tab),
     tabItem(
       "manual",
       tags$iframe(style = "position: absolute; height: 100%; border: none", width =
@@ -160,6 +162,7 @@ header <- customDashboardHeader(
   menuItem("Bowtie 2", tabName = "bowtie2", selected = TRUE),
   menuItem("CRISPR", tabName = "crispr"),
   menuItem("Visuals", tabName = "visuals"),
+  menuItem("Classification", tabName = "classification"),
   menuItem("Manual", tabName = "manual")
 )
 #
