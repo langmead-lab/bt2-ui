@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./build.sh ; ./restart.sh -v ~/bt2-ui/indexes:/indexes
+./build.sh ; ./restart.sh -v ~/Documents/bt2-ui/indexes:/indexes
