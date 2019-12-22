@@ -23,13 +23,13 @@ classification_tab <- fluidPage(
       fluidRow(
         p("Compare your accession to our dataset"),
         selectInput(
-          "index5",
+          "index6",
           "Feature you want on the x axis",
           c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference"),
           selected = "Gene Annotation Percent"
         ),
         selectInput(
-          "index6",
+          "index7",
           "Feature you want on the y axis",
           c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference"),
           selected = "Average Read Length"
@@ -45,6 +45,7 @@ classification_tab <- fluidPage(
       )
     ),
     mainPanel(
+      textOutput("classificationError"),
       p("This is where the graphs will go"),
       conditionalPanel(
         condition = "output.classification_update === true",

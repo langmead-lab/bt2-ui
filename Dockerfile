@@ -26,7 +26,10 @@ COPY www /srv/shiny-server/bt2-ui/www
 COPY MANUAL.markdown /srv/shiny-server/bt2-ui/
 COPY *.R /srv/shiny-server/bt2-ui/
 COPY *.py /srv/shiny-server/bt2-ui/
+COPY python_requirments.txt /srv/shiny-server/bt2-ui/
+RUN pip install -r /srv/shiny-server/bt2-ui/python_requirments.txt
 
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
 RUN R -e "rmarkdown::render('/srv/shiny-server/bt2-ui/MANUAL.markdown',output_file='/srv/shiny-server/bt2-ui/www/MANUAL.html')"
+

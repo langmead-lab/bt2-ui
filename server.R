@@ -775,6 +775,7 @@ function(input, output, session) {
         "-S")
     out <- submit_query(query, aligner = "bowtie", index = input$index2, upto = 0)
 
+
     if (out$stdout == "") {
       usage_lines <- str_split(bt2_usage, "\n")[[1]]
       error_lines <- str_split(out$stderr, "\n")[[1]]
@@ -1222,6 +1223,36 @@ function(input, output, session) {
       )
     }
 
+    submit_query_sampling <-
+      function(query,
+        reads = 10000,
+        index = NULL,
+        aligner = "bowtie2") {
+
+        query <- query %>%
+          str_remove(paste0("^", aligner, "\\s*")) %>%
+          paste("--shmem", if (aligner == "bowtie") "--sam-nohead" else "--no-head")
+        bin_path <- paste("/software", paste0(aligner, "/", aligner), sep = "/")
+
+        if (str_detect(query, "--sample-sra") == FALSE && reads != 0) {
+          query <- paste(query, "--sample-sra", reads)
+        }
+
+        if (index != "") {
+          query <- str_replace(query, index, "genome")
+        }
+
+        argv <- str_split(query, "\\s+")[[1]]
+        BOWTIE2_INDEXES <- paste("/indexes", index, sep = "/")
+        run(
+          bin_path,
+          argv,
+          env = c(Sys.getenv(), BOWTIE2_INDEXES = BOWTIE2_INDEXES, BOWTIE_INDEXES = BOWTIE2_INDEXES),
+          error_on_status = FALSE
+        )
+      }
+
+
   highlight_sam <- function(sam, style = "perldoc", nowrap = FALSE) {
     pygments <- import("pygments")
     pygments.lexers <- import("pygments.lexers")
@@ -1312,7 +1343,7 @@ function(input, output, session) {
                       " -x genome --sra-acc ",
                       input$index4)
       out <-
-        submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = input$index3)
+        submit_query_sampling(query, reads = as.integer(input$readNumber), index = input$index3)
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
@@ -1485,7 +1516,7 @@ function(input, output, session) {
                       " -x genome --sra-acc ",
                       rvs$accession)
       out <-
-        submit_query(query, aligner = "bowtie2", upto = as.integer(input$readNumber), index = rvs$index)
+        submit_query_sampling(query, reads = as.integer(input$readNumber), index = rvs$index)
       if (out$stdout == "") {
         output$displayError <- renderText({
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
@@ -1761,4 +1792,40 @@ function(input, output, session) {
       write.csv(do.call(rbind.data.frame, rvs$read_quality_second), file)
     }
   )
+
+
+###########Classification############
+  observeEvent(input$classificationSubmit, {
+    withProgress(message = "Making plots", value = 0, {
+      n <- 4
+      incProgress(1/n, "Running bowtie2")
+      output$classificationError <- renderText({
+        paste("I have been called")
+      })
+      query <- paste0("--no-hd ",
+                      " -x genome --sra-acc ",
+                      input$index5)
+      out <-
+        submit_query_sampling(query, index = "GCA")
+
+      if (out$stdout == "") {
+        output$classificationError <- renderText({
+          paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
+        })
+      } else {
+        output$classificationError <- renderText({
+          "I didn't mess up!"
+        })
+        incProgress(1/n, "Analizing SAM")
+        rvs$alignment_summary <- out$stderr
+        rvs$bt2_sam <- out$stdout
+        source_python("classification_util.py")
+        data_point <- main(rvs$bt2_sam, paste("/gtf/Homo_sapiens.GRCh38.98.gtf"))
+        output$classificationError <- renderText({
+          paste(data_point)
+        })
+      }
+      incProgress(1/n, "Predicting Label")
+    })
+  })
 }
