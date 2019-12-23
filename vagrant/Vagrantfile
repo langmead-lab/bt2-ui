@@ -9,12 +9,6 @@
 # Note: the standard vagrant-aws plugin does not have spot support
 
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
-REGION = "us-east-2"
-INSTANCE_TYPE = "t3a.large"
-BID_PRICE = "0.06"
-ACCOUNT = "jhu-langmead"
-KEYPAIR = "bt2-ui-us-east-2"
-PUBLIC_IP = "18.218.70.192"
 
 Vagrant.configure("2") do |config|
 
@@ -22,28 +16,26 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/vagrant", disabled: true
 
     config.vm.provider :aws do |aws, override|
-        aws.aws_dir = ENV['HOME'] + "/.aws/"
-        aws.aws_profile = ACCOUNT
-        aws.region = REGION
-        aws.tags = { 'Application' => 'bt2-ui' }
-        aws.instance_type = INSTANCE_TYPE
-        aws.associate_public_ip = true
-        aws.keypair_name = KEYPAIR
-        if REGION == "us-east-1"
-            aws.ami = "ami-13401669"
-            aws.subnet_id = "subnet-1fc8de7a"
-            aws.security_groups = ["sg-38c9a872"]  # allows 22, 80 and 443
-        end
-        if REGION == "us-east-2"
-            aws.ami = "ami-901338f5"
-            if ACCOUNT == "default"
-                aws.subnet_id = "subnet-09923c0ca7212a423"
-                aws.security_groups = ["sg-051ff8479e318f0ab"]  # allows just 22
-            else
-                aws.subnet_id = "subnet-03dc5fea763057c7d"
-                aws.security_groups = ["sg-0a01b0edfa261cb34"]  # allows just 22
-            end
-        end
+    aws.aws_dir = ENV['HOME'] + "/.aws/"
+    aws.aws_profile = ENV['VAGRANT_AWS_PROFILE']
+    aws.region = ENV['VAGRANT_AWS_REGION']
+    aws.tags = { 'Application' => 'recount' }
+    aws.instance_type = ENV['VAGRANT_AWS_EC2_INSTANCE_TYPE']
+    aws.associate_public_ip = true
+    aws.keypair_name = ENV['VAGRANT_AWS_EC2_KEYPAIR']
+    aws.ami = ENV['VAGRANT_AWS_AMI']
+    aws.subnet_id = ENV['VAGRANT_AWS_SUBNET_ID']
+    aws.security_groups = [ENV['VAGRANT_AWS_SECURITY_GROUP']]
+    aws.block_device_mapping = [{
+      'DeviceName' => "/dev/sdf",
+      'VirtualName' => "ephemeral0",
+      'Ebs.VolumeSize' => 100,
+      'Ebs.DeleteOnTermination' => true,
+      'Ebs.VolumeType' => 'gp2'
+    }]
+    override.ssh.username = "ec2-user"
+    override.ssh.private_key_path = "~/.aws/" + ENV['VAGRANT_AWS_EC2_KEYPAIR'] + ".pem"
+
         aws.elastic_ip = PUBLIC_IP
         aws.block_device_mapping = [{
             'DeviceName' => "/dev/sdf",

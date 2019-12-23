@@ -1,3 +1,11 @@
+REGION = "us-east-2"
+INSTANCE_TYPE = "t3a.large"
+BID_PRICE = "0.06"
+ACCOUNT = "jhu-langmead"
+KEYPAIR = "bt2-ui-us-east-2"
+PUBLIC_IP = "18.218.70.192"
+
+
 {
   "profile" : {
     "jhu_ue1" : {
