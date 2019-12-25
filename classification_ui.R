@@ -25,13 +25,13 @@ classification_tab <- fluidPage(
         selectInput(
           "index6",
           "Feature you want on the x axis",
-          c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference"),
+          c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference", "Percent A", "Percent C", "Percent G", "Percent T"),
           selected = "Gene Annotation Percent"
         ),
         selectInput(
           "index7",
           "Feature you want on the y axis",
-          c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference"),
+          c("Gene Annotation Percent", "Average Read Length", "Read Frequency", "Possition Differece STD", "Possition Difference Mean", "Number of Chromosomes", "Largest Position Difference", "Smallest Position Difference", "Percent A", "Percent C", "Percent G", "Percent T"),
           selected = "Average Read Length"
         )
       ),
@@ -46,14 +46,13 @@ classification_tab <- fluidPage(
     ),
     mainPanel(
       textOutput("classificationError"),
-      p("This is where the graphs will go"),
       conditionalPanel(
         condition = "output.classification_update === true",
         p("This is our confidence rating for your accesssion")
       ),
       conditionalPanel(
-        condition = "output.comparison_update === true",
-        p("This is how your accession compares to our dataset")
+        condition = "output.comparison_update",
+        plotlyOutput("classifcation_data_scatter")
       )
     )
   )
