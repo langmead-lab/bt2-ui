@@ -27,7 +27,8 @@ COPY MANUAL.markdown /srv/shiny-server/bt2-ui/
 COPY *.R /srv/shiny-server/bt2-ui/
 COPY *.py /srv/shiny-server/bt2-ui/
 COPY python_requirments.txt /srv/shiny-server/bt2-ui/
-RUN pip install -r /srv/shiny-server/bt2-ui/python_requirments.txt
+RUN apt-get install -y python3-pip
+RUN pip3 install -r /srv/shiny-server/bt2-ui/python_requirments.txt
 
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 

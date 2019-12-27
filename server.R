@@ -1795,37 +1795,6 @@ function(input, output, session) {
 
 
 ###########Classification############
-  # observeEvent(input$classificationSubmit, {
-  #   withProgress(message = "Running bowtie2", value = 0, {
-  #     n <- 4
-  #     incProgress(1/n, "Running bowtie2")
-  #     query <- paste0("--no-hd ",
-  #                     " -x genome --sra-acc ",
-  #                     input$index5)
-  #     out <-
-  #       submit_query_sampling(query, index = "GCA")
-  #
-  #     if (out$stdout == "") {
-  #       output$classificationError <- renderText({
-  #         paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
-  #       })
-  #     } else {
-  #       output$classificationError <- renderText({
-  #         "I didn't mess up!"
-  #       })
-  #       incProgress(1/n, "Analizing SAM")
-  #       rvs$alignment_summary <- out$stderr
-  #       rvs$bt2_sam <- out$stdout
-  #       source_python("classification_util.py")
-  #       data_point <- main(rvs$bt2_sam, paste("/gtf/Homo_sapiens.GRCh38.98.gtf"))
-  #       output$classificationError <- renderText({
-  #         paste(data_point)
-  #       })
-  #     }
-  #     incProgress(1/n, "Predicting Label")
-  #   })
-  # })
-
   observeEvent(input$comparisonSubmit, {
     output$comparison_update <- reactive({
       TRUE
@@ -1844,9 +1813,13 @@ function(input, output, session) {
           paste("An error occured while running bowtie2. Error message below\n\n", out$stderr)
         })
       } else {
+        output$classificationError <- renderText({
+          ""
+        })
         incProgress(1/n, "Analizing SAM")
         rvs$alignment_summary <- out$stderr
         rvs$bt2_sam <- out$stdout
+        use_python("/usr/local/bin/python3")
         source_python("classification_util.py")
         rvs$data_point <- main(rvs$bt2_sam, paste("/gtf/Homo_sapiens.GRCh38.98.gtf"))
         incProgress(1/n, "Handling pre-generated data")
@@ -1856,6 +1829,13 @@ function(input, output, session) {
           sep = ",",
           stringsAsFactors = FALSE
         )
+        output$classificationError <- renderText({
+          paste(rvs$data_point)
+        })
+        prediction <- classifyAccession(rvs$data_point)
+        output$classificationPrediction <- renderText({
+          paste("We predict your accession is ", prediction)
+        })
         rvs$all_data[nrow(rvs$all_data) + 1,] <- rvs$data_point
         word_to_index <- c("Assay"=1, "Gene Annotation Percent"=2, "Average Read Length"=3, "Read Frequency"=4, "Possition Differece STD"=5, "Possition Difference Mean"=6, "Number of Chromosomes"=7, "Largest Position Difference"=8, "Smallest Position Difference"=9, "Percent A"=10, "Percent C"=11, "Percent G"=12, "Percent T"=13)
         incProgress(1/n, "Generating Plots")

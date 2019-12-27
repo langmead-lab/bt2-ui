@@ -12,15 +12,6 @@ classification_tab <- fluidPage(
         textInput("index5", "Sequence Read Archive", "")
       ),
       fluidRow(
-        bsButton(
-          "classificationSubmit",
-          "Classify",
-          stype = "primary",
-          icon = icon("play")
-        )
-      ),
-      br(),
-      fluidRow(
         p("Compare your accession to our dataset"),
         selectInput(
           "index6",
@@ -38,13 +29,14 @@ classification_tab <- fluidPage(
       fluidRow(
         bsButton(
           "comparisonSubmit",
-          "Compare",
+          "Classify and Compare",
           stype = "primary",
           icon = icon("play")
         )
       )
     ),
     mainPanel(
+      textOutput("classificationPrediction"),
       textOutput("classificationError"),
       conditionalPanel(
         condition = "output.classification_update === true",

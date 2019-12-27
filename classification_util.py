@@ -1,8 +1,20 @@
 from collections import defaultdict, Counter
+from sklearn.ensemble import RandomForestClassifier
 from ncls import NCLS
 import numpy as np
 import sys
 import re
+import pickle
+
+def classifyAccession(data_point):
+    model = pickle.load(open("/data/model.pickle", "rb"))
+    prediction = model.predict([data_point[1:]])
+    if prediction == 0:
+        return "WGS"
+    if prediction == 1:
+        return "mRNA"
+    if prediction == 2:
+        return "sRNA"
 
 def getChromosome(str):
     if str == "*" or str[3:] == 'X':
@@ -20,9 +32,6 @@ def generate_empty_list():
 
 def handle_gtf(file):
     frequency_trees = defaultdict(generate_empty_list)
-    print("$$$$$$$$$$$$$$$$$$")
-    print(file)
-    print("$$$$$$$$$$$$$$$$$$")
     gtf = open(file, 'r')
     for line in gtf:
         line = line.split('\t')
