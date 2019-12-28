@@ -1834,7 +1834,7 @@ function(input, output, session) {
           paste("We predict your accession is ", prediction)
         })
         rvs$all_data[nrow(rvs$all_data) + 1,] <- rvs$data_point
-        word_to_index <- c("Assay"=1, "Gene Annotation Percent"=2, "Average Read Length"=3, "Read Frequency"=4, "Possition Differece STD"=5, "Possition Difference Mean"=6, "Number of Chromosomes"=7, "Largest Position Difference"=8, "Smallest Position Difference"=9, "Percent A"=10, "Percent C"=11, "Percent G"=12, "Percent T"=13)
+        word_to_index <- c("Assay"=1, "Gene Annotation Percent"=2, "Average Read Length"=3, "Read Frequency"=4, "Possition Differece STD"=5, "Position Difference Mean"=6, "Number of Chromosomes"=7, "Largest Position Difference"=8, "Smallest Position Difference"=9, "Percent A"=10, "Percent C"=11, "Percent G"=12, "Percent T"=13)
         incProgress(1/n, "Generating Plots")
         output$classifcation_data_scatter <-renderPlotly({
           plot_ly(x = rvs$all_data[,word_to_index[input$index6]], y = rvs$all_data[,word_to_index[input$index7]], color = rvs$all_data[,word_to_index["Assay"]], mode = "markers", type = "scatter") %>%
