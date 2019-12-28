@@ -10,16 +10,10 @@ def parserFile(filename):
     unmatched_reads = 0
     read_quality = [[]]
     match_scores = []
-
-    #TODO throw an error/ warning if the readSize is greater than the number
-    #of lines in the file.
     f = open(filename)
-    #Splitting everyline into its own place in the arry
     lines = f.readlines()
-    #Itterating though everyline
     for i in range(3, len(lines)):
         get_match_score = True
-        #Splitting the lines into whitespace
         subline = line_spliter.split(lines[i])
 
         if (subline[1] == '0'):
@@ -47,13 +41,11 @@ def matched_vs_unmatched_pie_chart(forward_reads, reverse_reads, unmatched_reads
     return (match_chart_labels, match_chart_values)
 
 def phred33_to_q(qual):
-  #Turn Phred+33 ASCII-encoded quality into Phred-scaled integer
   return ord(qual)-33
 
 def read_quality_converter(read_quality):
     for i in range(len(read_quality)):
         for j in range(len(read_quality[i])):
-            #Converting the read quality data to probabilities
             read_quality[i][j] = phred33_to_q(read_quality[i][j])
     return read_quality
 
@@ -111,8 +103,6 @@ def parseString(txt):
         if (get_match_score):
             match_scores.append(int(colon_spliter.split(subline[11])[2]))
             mapq_scores.append(int(subline[4]))
-    # except:
-    #     print("Invalid Line")
     read_quality_unpaired = read_quality_converter(read_quality_unpaired)
     read_quality_first = read_quality_converter(read_quality_first)
     read_quality_second = read_quality_converter(read_quality_second)
