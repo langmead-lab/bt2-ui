@@ -39,10 +39,6 @@ classification_tab <- fluidPage(
       textOutput("classificationPrediction"),
       textOutput("classificationError"),
       conditionalPanel(
-        condition = "output.classification_update === true",
-        p("This is our confidence rating for your accesssion")
-      ),
-      conditionalPanel(
         condition = "output.comparison_update",
         plotlyOutput("classifcation_data_scatter")
       )
