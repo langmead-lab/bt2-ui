@@ -1829,9 +1829,6 @@ function(input, output, session) {
           sep = ",",
           stringsAsFactors = FALSE
         )
-        output$classificationError <- renderText({
-          paste(rvs$data_point)
-        })
         prediction <- classifyAccession(rvs$data_point)
         output$classificationPrediction <- renderText({
           paste("We predict your accession is ", prediction)
