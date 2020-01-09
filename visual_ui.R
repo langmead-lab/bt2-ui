@@ -152,7 +152,7 @@ visuals_tab <- fluidPage(
                              downloadButton("mapq_download", "Download CSV"))
           ),
           tabPanel(
-            "Alignemnt Summary",
+            "Alignment Summary",
             conditionalPanel(condition = "output.display_summary",
                              plotlyOutput("alignment_pieplot"),
                              downloadButton("alignment_download", "Download CSV")
