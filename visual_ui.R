@@ -124,13 +124,13 @@ visuals_tab <- fluidPage(
           ),
           tabPanel(
             "Alignment Scores",
-            conditionalPanel(condition = "output.display_unpaired",
+            conditionalPanel(condition = "output.display_unpaired  === true",
                              plotlyOutput("boxplot_unpaired"),
                              downloadButton("unpaired_download", "Download CSV")),
-            conditionalPanel(condition = "output.display_first",
+            conditionalPanel(condition = "output.display_first  === true",
                              plotlyOutput("boxplot_first"),
                              downloadButton("first_download", "Download CSV")),
-            conditionalPanel(condition = "output.display_second",
+            conditionalPanel(condition = "output.display_second  === true",
                              plotlyOutput("boxplot_second"),
                              downloadButton("second_download", "Download CSV"))
           ),
@@ -141,24 +141,24 @@ visuals_tab <- fluidPage(
           ),
           tabPanel(
             "TLEN",
-            conditionalPanel(condition = "output.display_tlen",
+            conditionalPanel(condition = "output.display_tlen  === true",
                              plotlyOutput("tlen_histogram"),
                              downloadButton("tlen_download", "Download CSV"))
           ),
           tabPanel(
             "MAPQ Scores",
-            conditionalPanel(condition = "output.display_mapq",
+            conditionalPanel(condition = "output.display_mapq  === true",
                              plotlyOutput("mapq_histogram"),
                              downloadButton("mapq_download", "Download CSV"))
           ),
           tabPanel(
             "Alignment Summary",
-            conditionalPanel(condition = "output.display_summary",
+            conditionalPanel(condition = "output.display_summary  === true",
                              plotlyOutput("alignment_pieplot"),
                              downloadButton("alignment_download", "Download CSV")
             )
           ),
-          conditionalPanel(condition = "output.visual_update",
+          conditionalPanel(condition = "output.visual_update  === true",
                            downloadButton("bt2DownloadSAM2", "Download Sam File"))
         )
       )
